@@ -37,19 +37,32 @@ paths:
                 properties:
                   name:
                     type: string
+                  records:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        distance:
+                          type: integer
+                        time:
+                          type: integer
+                        raceId:
+                          type: string
                   races:
                     type: array
                     items:
                       type: object
                       properties:
+                        raceId:
+                          type: string
                         lane:
                           type: integer
                         placement: 
                           type: integer
                         time:
-                          type: string
+                          type: integer
                         delta:
-                          type: string
+                          type: integer
       parameters:
         - name: raceLimit
           in: query
