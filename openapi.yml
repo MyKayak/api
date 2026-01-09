@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: MyKayak API
+  version: 1.0.0
+  description: Enhanced FICr API
+servers:
+  - url: https://api.mykayak.fuffo.net
+    description: Production server
+paths:
+  /athletes:
+    get:
+      summary: Get list of athletes
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+  /athlete/{id}:
+    get:
+      summary: Get athlete by ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  races:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        lane:
+                          type: integer
+                        placement: 
+                          type: integer
+                        time:
+                          type: string
+                        delta:
+                          type: string
+      parameters:
+        - name: raceLimit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
