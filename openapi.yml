@@ -43,26 +43,16 @@ paths:
                       type: object
                       properties:
                         distance:
-                          type: integer
+                          type: integer # in meters
                         time:
-                          type: integer
+                          type: integer # in milliseconds
                         raceId:
                           type: string
                   races:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        raceId:
-                          type: string
-                        lane:
-                          type: integer
-                        placement: 
-                          type: integer
-                        time:
-                          type: integer
-                        delta:
-                          type: integer
+                      type: string
+                      
       parameters:
         - name: raceLimit
           in: query
@@ -70,3 +60,30 @@ paths:
           schema:
             type: integer
             default: 0
+  /race/{id}:
+    get:
+      summary: Get race by ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dateTime:
+                    type: string
+                    format: date-time
+                  distance:
+                    type: integer # in meters
+                  raceId:
+                    type: string
+                    format: uuid
+                  lane:
+                    type: integer
+                  placement: 
+                    type: integer
+                  time:
+                    type: integer
+                  delta:
+                    type: integer
