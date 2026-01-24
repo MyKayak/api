@@ -11,6 +11,7 @@ The MyKayak API uses a MySQL database to store data.
 - users
 - followed_athletes
 - followed_teams
+- tokens
 ### meets
 A meet is an event that takes place at a specific location on a specific day.
 #### Attributes:
@@ -106,3 +107,12 @@ A followed team is a relationship between a user and a team that is used to show
     - Type: INT
 - team_id
     - Type: INT
+### tokens
+A token is used by the client for authentication.
+#### Attributes:
+- token_id
+    - Type: INT
+- user_id
+    - Type: INT
+- token
+    - Type: CHAR(64)
