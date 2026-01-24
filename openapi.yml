@@ -11,7 +11,7 @@ paths:
     get:
       summary: Get list of athletes
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -22,13 +22,14 @@ paths:
                   properties:
                     id:
                       type: string
+                      format: uuid
                     name:
                       type: string
   /athlete/{id}:
     get:
       summary: Get athlete by ID
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -46,25 +47,40 @@ paths:
                           type: integer # in meters
                         time:
                           type: integer # in milliseconds
-                        raceId:
+                        heatId:
                           type: string
-                  races:
+                          format: uuid
+                  heats:
                     type: array
                     items:
                       type: string
-                      
+                      format: uuid
+
       parameters:
-        - name: raceLimit
+        - name: heatLimit
           in: query
           required: false
           schema:
             type: integer
             default: 0
-  /race/{id}:
+  /performance/{id}:
     get:
-      summary: Get race by ID
+      summary: Get performance by ID
+      description: A performance contains the results or startlist entry of an athlete within a specific heat.
+      parameters:
+        - name: results
+          in: query
+          required: false
+          description: Whether to include results in the response or just send the startlist entry.
+          schema:
+            type: boolean
+            default: true
+  /heat/{id}:
+    get:
+      summary: Get heat by ID
+      description: A heat is singular instance of a race.
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -81,9 +97,15 @@ paths:
                     format: uuid
                   lane:
                     type: integer
-                  placement: 
+                  placement:
                     type: integer
                   time:
                     type: integer
-                  delta:
-                    type: integer
+  /race/{id}:
+    get:
+      summary: Get race by ID
+      description: A race is a collection of heats that share the same distance and category.
+  /meet/{id}:
+    get:
+      summary: Get meet by ID
+      description: A meet is a collection of races that are grouped on the same day in the same location.
