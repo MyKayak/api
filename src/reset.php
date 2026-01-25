@@ -19,7 +19,7 @@ $conn->query("DROP TABLE IF EXISTS athletes");
 $conn->query("DROP TABLE IF EXISTS teams");
 
 $conn->query("CREATE TABLE teams (
-    team_id INT PRIMARY KEY AUTO_INCREMENT,
+    team_id CHAR(5) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     logo TEXT
 )");
@@ -39,7 +39,7 @@ $conn->query("CREATE TABLE users (
 )");
 
 $conn->query("CREATE TABLE meets (
-    meet_id INT PRIMARY KEY AUTO_INCREMENT,
+    meet_id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     location VARCHAR(255),
     date DATE,
@@ -47,8 +47,8 @@ $conn->query("CREATE TABLE meets (
 )");
 
 $conn->query("CREATE TABLE races (
-    race_id INT PRIMARY KEY AUTO_INCREMENT,
-    meet_id INT NOT NULL,
+    race_id VARCHAR(255) PRIMARY KEY,
+    meet_id VARCHAR(255) NOT NULL,
     distance INT NOT NULL,
     division VARCHAR(3) NOT NULL,
     category CHAR(1) NOT NULL,
@@ -57,7 +57,7 @@ $conn->query("CREATE TABLE races (
 
 $conn->query("CREATE TABLE heats (
     heat_id INT PRIMARY KEY AUTO_INCREMENT,
-    race_id INT NOT NULL,
+    race_id VARCHAR(255) NOT NULL,
     heat_index INT NOT NULL,
     start_time DATETIME,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE
@@ -112,8 +112,35 @@ $conn->query("CREATE TABLE followed_athletes (
 
 $conn->query("CREATE TABLE followed_teams (
     user_id INT NOT NULL,
-    team_id INT NOT NULL,
+    team_id CHAR(5) NOT NULL,
     PRIMARY KEY (user_id, team_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE
 )");
+
+
+
+function fix_ficr_string($str) // courtesy of Gemini
+{
+    // FICR API sends UTF-8 strings that were doubly-encoded as Windows-1252.
+    // We reverse this by converting "From UTF-8 (interpreted)" -> "To Windows-1252 (bytes)"
+    return mb_convert_encoding($str, "Windows-1252", "UTF-8");
+}
+
+$years = range(2022, getdate()['year']);
+
+foreach ($years as $year) {
+    $meets = json_decode(file_get_contents("https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19"))->data;
+    foreach ($meets as $meet) {
+        $stmt = $conn->prepare("INSERT INTO meets (meet_id, location, name, date) VALUES (:meet_id, :location, :name, :date)");
+        try {
+            $stmt->execute([
+                "meet_id" => $meet->CodicePub,
+                "location" => fix_ficr_string($meet->Place),
+                "name" => fix_ficr_string($meet->Description),
+                "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
+            ]);
+        } catch (PDOException $e) {
+        }
+    }
+}
