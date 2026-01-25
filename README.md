@@ -36,11 +36,16 @@ A race is a a collection of heats that share the same distance, division and cat
 - meet_id
     - Type: INT
 - distance
-    - Type: INT
+    - Type: INT (200, 500, 1000, 2000, 5000 ...)
 - division
-    - Type: VARCHAR(3)
+    - Type: VARCHAR(3) (SEN, U23, JUN, RAG, CDB, CDA, ALB, ALA, DRA, DRB)
 - category
-    - Type: CHAR(1)
+    - Type: CHAR(1) (M, F, X)
+- boat
+    - Type: CHAR(2) (C1, C2, C4, K1, K2, K4)
+- level
+    - Type: CHAR(2) (HT, SF, FA, FB, FC)
+
 ### heats
 A heat is a single instance of a race.
 #### Attributes:
@@ -145,3 +150,6 @@ A point is a score that is assigned to a performance.
     - Type: INT
 - points
     - Type: INT
+
+## Known issues (should fix)
+- All finals are stored the same, this means people are awarded medals in B finals too even though they're only supposed to get them for A finals.

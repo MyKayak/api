@@ -50,8 +50,10 @@ $conn->query("CREATE TABLE races (
     race_id VARCHAR(255) PRIMARY KEY,
     meet_id VARCHAR(255) NOT NULL,
     distance INT NOT NULL,
-    division VARCHAR(3) NOT NULL,
+    division CHAR(3) NOT NULL,
     category CHAR(1) NOT NULL,
+    boat CHAR(2) NOT NULL,
+    level CHAR(2) NOT NULL,
     FOREIGN KEY (meet_id) REFERENCES meets(meet_id) ON DELETE CASCADE
 )");
 
@@ -141,6 +143,212 @@ foreach ($years as $year) {
                 "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
             ]);
         } catch (PDOException $e) {
+        }
+    }
+}
+
+$meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($meetIDs as $meetID) {
+    $raceDays = json_decode(file_get_contents("https://apicanoavelocita.ficr.it/CAV/mpcache-30/get/programdate/$meetID"))->data;
+    foreach ($raceDays as $raceDay) {
+        if (!isset($raceDay->e))
+            continue;
+
+        foreach ($raceDay->e as $race) {
+            $division;
+            $category;
+
+            switch (substr($race->c0, 0, 2)) {
+                case "SE":
+                    $division = "SEN";
+                    break;
+                case "U2":
+                    $division = "U23";
+                    break;
+                case "JU":
+                    $division = "JUN";
+                    break;
+                case "RA":
+                    $division = "RAG";
+                    break;
+                case "CB":
+                    $division = "CDB";
+                    break;
+                case "CA":
+                    $division = "CDA";
+                    break;
+                case "AB":
+                    $division = "ALB";
+                    break;
+                case "AA":
+                    $division = "ALA";
+                    break;
+                case "DA":
+                    $division = "DRA";
+                    break;
+                case "DB":
+                    $division = "DRB";
+                    break;
+            }
+
+            $catChar = substr($race->c0, 2);
+            $category = is_int(array_search($catChar, ["M", "F"])) ? $catChar : "X";
+
+            $distance;
+
+            switch (substr($race->c1, 2, 4)) {
+                case '01':
+                    $distance = 200;
+                    break;
+                case '02':
+                    $distance = 500;
+                    break;
+                case '03':
+                    $distance = 1000;
+                    break;
+                case '04':
+                    $distance = 2000;
+                    break;
+                case '05':
+                    $distance = 5000;
+                    break;
+                case '08':
+                case '14':
+                case '17':
+                case '18':
+                    $distance = 15000;
+                    break;
+                case '09':
+                    $distance = 17500;
+                    break;
+                case '10':
+                case '11':
+                case '39':
+                    $distance = 12500;
+                    break;
+                case '15':
+                    $distance = 20000;
+                    break;
+                case '16':
+                case '50':
+                    $distance = 10000;
+                    break;
+                case '23':
+                    $distance = 18000;
+                    break;
+                case '28':
+                    $distance = 21000;
+                    break;
+                case '29':
+                    $distance = 24000;
+                    break;
+                case '30':
+                    $distance = 38000;
+                    break;
+                case '36':
+                    $distance = 5000;
+                    break;
+                case '38':
+                    $distance = 17500;
+                    break;
+            }
+
+            $boat;
+
+            switch (substr($race->c1, 0, 2)) {
+                case '00':
+                case '10':
+                    $boat = "K2";
+                    break;
+                case '01':
+                case '07':
+                case '21':
+                    $boat = "C1";
+                    break;
+                case '02':
+                case '08':
+                    $boat = "C2";
+                    break;
+                case '03':
+                    $boat = "C4";
+                    break;
+                case '04':
+                case '09':
+                case '18':
+                case '20':
+                case '90':
+                case '94':
+                    $boat = "K1";
+                    break;
+                case '05':
+                    $boat = "K2";
+                    break;
+                case '06':
+                case '11':
+                case '12':
+                    $boat = "K4";
+                    break;
+                case '13':
+                case '15':
+                    $boat = "V2";
+                    break;
+                case '14':
+                    $boat = "V1";
+                    break;
+                case '19':
+                    $boat = "MX";
+                    break;
+                case '24':
+                    $boat = "S1";
+                    break;
+                case '25':
+                    $boat = "S2";
+                    break;
+                case '26':
+                    $boat = "O1";
+                    break;
+                case '27':
+                    $boat = "O2";
+                    break;
+                case '99':
+                    $boat = "DB";
+                    break;
+            }
+
+            $level;
+
+            switch ($race->c2) {
+                case "001":
+                    $level = "HT";
+                    break;
+                case "003":
+                    $level = "SF";
+                    break;
+                case "005":
+                    $level = "FA";
+                    break;
+                case "006":
+                    $level = "DF";
+                    break;
+                case "007":
+                    $level = "SR"; // Similar to a final but the winner can't be declared a champion
+                    break;
+            }
+
+            $stmt = $conn->prepare("INSERT INTO races (race_id, meet_id, distance, division, category, boat, level) VALUES (:race_id, :meet_id, :distance, :division, :category, :boat, :level)");
+            try {
+                $stmt->execute([
+                    "meet_id" => $meetID,
+                    "race_id" => "$race->c0/$race->c1/" . substr($race->c2, 1) . "/$race->c3",
+                    "distance" => $distance,
+                    "division" => $division,
+                    "category" => $category,
+                    "boat" => $boat,
+                    "level" => $level
+                ]);
+            } catch (PDOException $e) {
+            }
         }
     }
 }

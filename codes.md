@@ -1,0 +1,232 @@
+### LEVEL CODES (c2 -> d1_it)
+- 001: Eliminatorie
+- 003: Semifinale
+- 005: Finale
+- 006: Finale Diretta, FINALE, Final, Finale
+- 007: Serie, Finale Diretta
+
+### BOAT/DISTANCE CODES (c1 -> d_it)
+- 0011: K2 5.20 200m Sabato, K2 5.20 200m
+- 0101: C1 200m
+- 0102: C1 500m
+- 0103: C1 1000m
+- 0104: C1 2000m
+- 0105: C1 5000m
+- 0110: C1 12.500m, C1 12.500 m
+- 0111: C1 12.500m, C1 12.500 m
+- 0114: C1 15000m
+- 0118: C1 15.000m, C1 15.000 m
+- 0123: C1 18000m
+- 0130: C1 38 Km
+- 0139: C1 12.500m, C1 12.500 m
+- 0150: C1 3.400m, C1 4.000m
+- 0201: C2 200m
+- 0202: C2 500m
+- 0203: C2 1000m
+- 0204: C2 2000m
+- 0205: C2 5000m
+- 0301: C4 200m
+- 0302: C4 500m
+- 0303: C4 1000m
+- 0401: K1 200m
+- 0402: K1 500m
+- 0403: K1 1000m
+- 0404: K1 2000m
+- 0405: K1 5000m
+- 0408: K1 15.000m
+- 0409: K1 17.500m
+- 0414: K1 15.000m, K1 15.000 m
+- 0415: K1 20.000 m
+- 0416: K1 10000m
+- 0417: K1 15.000m
+- 0418: K1 15.000 m
+- 0423: K1 18000m
+- 0428: K1 21000m
+- 0429: K1 24000m
+- 0430: K1 38 Km
+- 0436: K1 5 Km
+- 0438: K1 17 500 m
+- 0450: K1 3.400m, K1 4.000m
+- 0501: K2 200m
+- 0502: K2 500m
+- 0503: K2 1000m
+- 0504: K2 2000m
+- 0505: K2 5000m
+- 0516: K2 10000m
+- 0530: K2 38 Km
+- 0536: K2 5 Km
+- 0601: K4 200m
+- 0602: K4 500m
+- 0603: K4 1000m
+- 0604: K4 2000m
+- 0605: K4 5000m
+- 0701: C1 4.20 200m
+- 0704: C1 4.20 2000m
+- 0801: C2 5.20 200m
+- 0804: C2 5.20 2000m
+- 0901: K1 4.20 200m
+- 0903: K1 4.20 1000m
+- 0904: K1 4.20 2000m
+- 0999: K1200m
+- 1001: K2 5.20 200m
+- 1004: K2 5.20 2000m
+- 1101: K4 8.50 200m
+- 1104: K4 8.50 2000m
+- 1201: K4 Star 200m
+- 1301: V2 Star 200m
+- 1401: V1 200m
+- 1402: V1 500m
+- 1403: V1 1000m
+- 1404: V1 2000m
+- 1501: V2 200m
+- 1502: V2 500m
+- 1801: K1-420 Staffetta 4x
+- 1901: K1-420 + K2-520 Staffetta
+- 2001: K1 Staffetta 4x
+- 2101: C1-420 + C2-520 Staffetta
+- 2447: SS1 Short Distance
+- 2448: SS1, SS1 - LONG DISTANCE, SS1 - LONG DISTANCE (19000m), SS1 - LONG DISTANCE (10000m), SS1 - LONG DISTANCE (12000m), SS1 Long Distance
+- 2449: SS1 - LONG DISTANCE (500m), SS1 - LONG DISTANCE (2000m)
+- 2450: SS1 - LONG DISTANCE (2000m)
+- 2548: SS2, SS2 - LONG DISTANCE, SS2 - LONG DISTANCE (19000m), SS2 - LONG DISTANCE (10000m), SS2 Long Distance
+- 2648: OC1, OC1 - LONG DISTANCE, OC1 - LONG DISTANCE (19000m), OC1 - LONG DISTANCE (10000m), OC1 - LONG DISTANCE (12000m)
+- 2748: OC2 - LONG DISTANCE, OC2 - LONG DISTANCE (10000m), OC2 Long Distance
+- 2843: SUP - SPRINT RACE, SPRINT RACE, SUP Sprint, SUP SPRINT, SUP Sprint race, SUP Sprint Race
+- 2847: SUP - TECHNICAL RACE, INFLATABLE RACE (2 km)
+- 2848: SUP - LONG DISTANCE, LONG DISTANCE (10km), SUP - LONG DISTANCE (7000m)
+- 2849: LONG DISTANCE (5km)
+- 3201: C1 + C2 200m, C1 + C2 Staffetta
+- 9011: K1 4.20 200m Sabato, K1 4.20 200m
+- 9012: K1 4.20 200m Domenica, K1 4.20 200m
+- 9015: Staffetta 3x200 K1+K2+K4
+- 9016: K2 5.20 200m.
+- 9090: BARCE&#39; 2.000m
+- 9098: K1 200m
+- 9099: V1 200m
+- 9401: K1 200m
+- 9901: Staffetta 200x3 K1/K2/K4, K1 + K2 + K4 200 m., Small Boat misto
+- 9902: Small Boat Femminile
+- 9903: Small Boat Open
+- 9904: Dragonboat Promozionale
+- 9997: 14.30 Dragoncino Open, Small Boat Open, DRAGONE 500m
+- 9998: Dragonboat 500, 18.27 Dragoncino Femm., Small Boat Femminile, DRAGONE 200m
+- 9999: Dragonboat 200, 18.50 Dragoncino Misto, Small Boat Misto, DRAGONE 500m
+
+### DIVISION/CATEGORY CODES (c0 -> d3_it)
+- AAF: Allievi A Femminile
+- AAM: Allievi A Maschile
+- AAX: Allievi A Mista
+- ABF: Allievi B Femminile
+- ABM: Allievi B Maschile
+- CAF: Cadetti A Femminile
+- CAM: Cadetti A Maschile
+- CBF: Cadetti B Femminile
+- CBM: Cadetti B Maschile
+- CDF: Master C-D Femminile
+- CDM: Master C-D Maschile
+- DAF: DIR A Femminile
+- DAM: DIR A Maschile
+- DBF: DIR B Femminile
+- DBM: DIR B Maschile
+- DCM: DIR A Giovanissimi Maschile
+- DDM: DIR B Giovanissimi Maschile
+- DMF: Master femminile
+- DR1: Donne in rosa
+- DR2: Senior Open
+- DR3: Small Para
+- DR4: Senior Femmine
+- DR5: Misto Senior
+- DR6: Master Misto
+- DRA: Dragonboat
+- DRG: Dragonboat
+- GAM: B1 Giovanissimi Maschile
+- GHM: KL3 Giovanissimi Maschile
+- GNF: KITA3 Giovanissimi Femminile
+- JAM: B1 Junior Maschile
+- JBM: B2 Junior Maschile
+- JHF: KL3 Junior Femminile
+- JHM: KL3 Junior Maschile
+- JIM: VL1 Junior Maschile
+- JNM: KITA3 Junior Maschile
+- JUF: Junior Femminile, Under 18 Women, Junior Women
+- JUM: Junior Maschile, Under 18 Men, Junior Men
+- JUO: Junior Open
+- JUX: Juniores Mista, Under 18 Mixed, Junior Mista, Juniores Mixed
+- MAF: Master A Femminile
+- MAM: Master A Maschile
+- MAX: Master A Mista
+- MBF: Master B Femminile
+- MBM: Master B Maschile
+- MBX: Master B Mista
+- MCF: Master C Femminile
+- MCM: Master C Maschile
+- MCX: Master C Mista
+- MDF: Master D Femminile
+- MDM: Master D Maschile
+- MDR: Master Mix + Paradragon
+- MDX: Master D Mista
+- MEF: Master E Femminile
+- MEM: Master E Maschile
+- MEX: Master E Mista
+- MFF: Master F Femminile
+- MFM: Master F Maschile
+- MFX: Master F Mista
+- MGF: Master G Femminile
+- MGM: Master G Maschile
+- MHM: Master H Maschile, Master Z Maschile
+- MIF: Master A+B Femminile
+- MIM: Master A+B Maschile
+- MJF: Master C+D Femminile
+- MJM: Master C+D Maschile
+- MJX: Master C+D Misto
+- MKF: Master E+F Femminile
+- MKM: Master E+F Maschile
+- MLM: Master G+H Maschile
+- MMM: Master A+B+C+D Maschile
+- MNF: Master E+F+G+H Femminile
+- MNM: Master E+F+G+H Maschile
+- MSO: Master OPEN
+- MSX: Master Mista
+- M_X: Master Cat. Unica
+- NAM: B1 Master Maschile
+- NHM: KL3 Master Maschile
+- NNM: KITA3 Master Maschile
+- OAX: Open Allievi, Open Allievi Mista
+- OCX: Open Cadetti, Open Cadetti Mista
+- OMD: Open Master
+- R1F: Ragazzi 1&#176; anno Femminile
+- R1M: Ragazzi 1&#176; anno Maschile
+- RAF: Ragazzi Femminile, Under 16 Women
+- RAM: Ragazzi Maschile, Under 16 Men
+- RAX: Ragazzi Mista, Under 16 Mixed
+- RBM: B1 Ragazzi Maschile
+- RCM: B2 Ragazzi Maschile
+- RIM: KL3 Ragazzi Maschile
+- SAM: B1 Senior Maschile
+- SBF: B2 Senior Femminile
+- SBM: B2 Senior Maschile
+- SCF: B3 Senior Femminile
+- SCM: B3 Senior Maschile
+- SEF: Senior Femminile, Senior Women
+- SEM: Senior Maschile, Senior Men
+- SEO: Senior Open
+- SEX: Seniores Mista, Seniores Mixed
+- SGF: KL1 Senior Femminile
+- SGM: KL1 Senior Maschile
+- SHM: KL2 Senior Maschile
+- SIF: KL3 Senior Femminile
+- SIM: KL3 Senior Maschile
+- SJF: VL1 Senior Femminile
+- SJM: VL1 Senior Maschile
+- SKF: VL2 Senior Femminile
+- SKM: VL2 Senior Maschile
+- SLF: VL3 Senior Femminile, VL3 Senior Women
+- SLM: VL3 Senior Maschile
+- SNM: KITA2 Senior Maschile
+- SNO: Senior OPEN
+- SOF: KITA3 Senior Femminile
+- SOM: KITA3 Senior Maschile, KITA3 Senior Men
+- SRM: VITA3 Senior Maschile
+- U2F: Under 23 Femminile
+- U2M: Under 23 Maschile, Dragonboat Allievi+Cadett
+- U2X: Under 23 Mista, Dragonboat Master
