@@ -62,6 +62,8 @@ A performance is a single instance of an athlete within a heat.
     - Type: INT
 - time
     - Type: INT (milliseconds)
+- status
+- Type: VARCHAR(4) (OK, DNS, DNF, DSQ ...)
 ### athletes
 An athlete is a person who participates in a race.
 #### Attributes:
@@ -74,7 +76,7 @@ An athlete is a person who participates in a race.
 - team_id
     - Type: INT
 ### teams
-A team is a group of athletes.
+A team is a group of athletes that typically compete in the same boats and train in the same location.
 #### Attributes:
 - team_id
     - Type: INT
@@ -87,7 +89,7 @@ A user is a person registered in the MyKayak system.
 #### Attributes:
 - user_id
     - Type: INT
-- name
+- username
     - Type: VARCHAR(255)
 - email
     - Type: VARCHAR(255)
@@ -116,3 +118,10 @@ A token is used by the client for authentication.
     - Type: INT
 - token
     - Type: CHAR(64)
+- expiration_date
+    - Type: DATE
+### placement_athletes
+- placement_id
+    - Type: INT
+- athlete_id
+    - Type: INT
