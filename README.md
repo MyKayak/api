@@ -7,11 +7,14 @@ The MyKayak API uses a MySQL database to store data.
 - heats
 - performances
 - athletes
+- performances_athletes
 - teams
 - users
 - followed_athletes
 - followed_teams
 - tokens
+- outcomes
+- points
 ### meets
 A meet is an event that takes place at a specific location on a specific day.
 #### Attributes:
@@ -45,6 +48,8 @@ A heat is a single instance of a race.
     - Type: INT
 - race_id
     - Type: INT
+- heat_index
+    - Type: INT
 - start_time
     - Type: DATETIME
 ### performances
@@ -54,36 +59,36 @@ A performance is a single instance of an athlete within a heat.
     - Type: INT
 - heat_id
     - Type: INT
+- athlete_team_id
+    - Type: INT
 - lane
     - Type: INT
 - placement
     - Type: INT
-- athlete_id
-    - Type: INT
 - time
     - Type: INT (milliseconds)
 - status
-- Type: VARCHAR(4) (OK, DNS, DNF, DSQ ...)
+    - Type: VARCHAR(4) (OK, DNS, DNF, DSQ ...)
 ### athletes
-An athlete is a person who participates in a race.
+A athlete is a person that participates in a race.
 #### Attributes:
 - athlete_id
     - Type: INT
 - name
     - Type: VARCHAR(255)
+- surname
+    - Type: VARCHAR(255)
 - birth_date
     - Type: DATE
-- team_id
-    - Type: INT
 ### teams
-A team is a group of athletes that typically compete in the same boats and train in the same location.
+A team is a group of athletes that typically race in the same crew and train together.
 #### Attributes:
 - team_id
     - Type: INT
 - name
     - Type: VARCHAR(255)
-- icon
-    - Type: VARCHAR(255)
+- logo
+    - Type: TEXT (url to the team logo)
 ### users
 A user is a person registered in the MyKayak system.
 #### Attributes:
@@ -120,8 +125,23 @@ A token is used by the client for authentication.
     - Type: CHAR(64)
 - expiration_date
     - Type: DATE
-### placement_athletes
-- placement_id
+### performances_athletes
+This table is used because a given performance may involve either a single athlete (K1/C1) or a crew (K2/C2/K4/C4)
+- performance_id
     - Type: INT
 - athlete_id
+    - Type: INT
+### outcomes
+An outcome is a status that can be assigned to a non-final performance. It indicates whether an athlete will advance to the next round or not.
+#### Attributes:
+- performance_id
+    - Type: INT
+- outcome_code
+    - Type: VARCHAR(4)
+### points
+A point is a score that is assigned to a performance.
+#### Attributes:
+- performance_id
+    - Type: INT
+- points
     - Type: INT
