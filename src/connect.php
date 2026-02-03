@@ -1,9 +1,9 @@
 <?php
 
-$servername = "localhost";
+$servername = "mykayak.fuffo.net";
 $db = "mykayak";
-$username = "root";
-$password = "";
+$username = getenv('DB_USER');
+$password = getenv('DB_PASSWORD');
 
 $conn = null;
 
