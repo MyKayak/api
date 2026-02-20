@@ -2,153 +2,34 @@
 
 require_once '../connect.php';
 
-$conn->query("USE mykayak");
 
-//
-//$conn->query("DROP TABLE IF EXISTS followed_teams");
-//$conn->query("DROP TABLE IF EXISTS followed_athletes");
-//$conn->query("DROP TABLE IF EXISTS tokens");
-//$conn->query("DROP TABLE IF EXISTS points");
-//$conn->query("DROP TABLE IF EXISTS outcomes");
-//$conn->query("DROP TABLE IF EXISTS performances_athletes");
-//$conn->query("DROP TABLE IF EXISTS performances");
-//$conn->query("DROP TABLE IF EXISTS heats");
-//$conn->query("DROP TABLE IF EXISTS races");
-//$conn->query("DROP TABLE IF EXISTS meets");
-//$conn->query("DROP TABLE IF EXISTS users");
-//$conn->query("DROP TABLE IF EXISTS athletes");
-//$conn->query("DROP TABLE IF EXISTS teams");
-//
-//$conn->query("CREATE TABLE teams (
-//    team_id CHAR(5) PRIMARY KEY,
-//    name VARCHAR(255) NOT NULL,
-//    logo TEXT
-//)");
-//
-//$conn->query("CREATE TABLE athletes (
-//    athlete_id INT PRIMARY KEY AUTO_INCREMENT,
-//    name VARCHAR(255) NOT NULL,
-//    surname VARCHAR(255) NOT NULL,
-//    birth_date DATE
-//)");
-//
-//$conn->query("CREATE TABLE users (
-//    user_id INT PRIMARY KEY AUTO_INCREMENT,
-//    username VARCHAR(255) NOT NULL UNIQUE,
-//    email VARCHAR(255) NOT NULL UNIQUE,
-//    password VARCHAR(255) NOT NULL
-//)");
-//
-//$conn->query("CREATE TABLE meets (
-//    meet_id VARCHAR(255) PRIMARY KEY,
-//    name VARCHAR(255) NOT NULL,
-//    location VARCHAR(255),
-//    date DATE,
-//    is_championship BOOLEAN DEFAULT FALSE
-//)");
-//
-//$conn->query("CREATE TABLE races (
-//    race_id VARCHAR(255) PRIMARY KEY,
-//    meet_id VARCHAR(255) NOT NULL PRIMARY KEY,
-//    distance INT NOT NULL,
-//    division CHAR(3) NOT NULL,
-//    category CHAR(1) NOT NULL,
-//    boat CHAR(2) NOT NULL,
-//    level CHAR(2) NOT NULL,
-//    FOREIGN KEY (meet_id) REFERENCES meets(meet_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE heats (
-//    heat_id INT PRIMARY KEY,
-//    race_id VARCHAR(255) NOT NULL PRIMARY KEY,
-//    meet_id VARCHAR(255) NOT NULL PRIMARY KEY,
-//    heat_index INT NOT NULL,
-//    start_time DATETIME,
-//    FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
-//    FOREIGN KEY (meet_id) REFERENCES races(meet_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE performances (
-//    performance_id INT PRIMARY KEY AUTO_INCREMENT,
-//    heat_id INT NOT NULL,
-//    athlete_team_id INT,
-//    lane INT,
-//    placement INT,
-//    time INT,
-//    status VARCHAR(4) DEFAULT 'OK',
-//    FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE performances_athletes (
-//    performance_id INT NOT NULL,
-//    athlete_id INT NOT NULL,
-//    PRIMARY KEY (performance_id, athlete_id),
-//    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE,
-//    FOREIGN KEY (athlete_id) REFERENCES athletes(athlete_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE outcomes (
-//    performance_id INT PRIMARY KEY,
-//    outcome_code VARCHAR(4) NOT NULL,
-//    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE points (
-//    performance_id INT PRIMARY KEY,
-//    points INT NOT NULL,
-//    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE tokens (
-//    token_id INT PRIMARY KEY AUTO_INCREMENT,
-//    user_id INT NOT NULL,
-//    token CHAR(64) NOT NULL,
-//    expiration_date DATE NOT NULL,
-//    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE followed_athletes (
-//    user_id INT NOT NULL,
-//    athlete_id INT NOT NULL,
-//    PRIMARY KEY (user_id, athlete_id),
-//    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-//    FOREIGN KEY (athlete_id) REFERENCES athletes(athlete_id) ON DELETE CASCADE
-//)");
-//
-//$conn->query("CREATE TABLE followed_teams (
-//    user_id INT NOT NULL,
-//    team_id CHAR(5) NOT NULL,
-//    PRIMARY KEY (user_id, team_id),
-//    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-//    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE
-//)");
-//
-//
-//
-//function fix_ficr_string($str) // courtesy of Gemini
-//{
-//    // FICR API sends UTF-8 strings that were doubly-encoded as Windows-1252.
-//    // We reverse this by converting "From UTF-8 (interpreted)" -> "To Windows-1252 (bytes)"
-//    return mb_convert_encoding($str, "Windows-1252", "UTF-8");
-//}
-//
-//$years = range(2022, getdate()['year']);
-//
-//foreach ($years as $year) {
-//    $meets = json_decode(file_get_contents("https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19"))->data;
-//    foreach ($meets as $meet) {
-//        $stmt = $conn->prepare("INSERT INTO meets (meet_id, location, name, date) VALUES (:meet_id, :location, :name, :date)");
-//        try {
-//            $stmt->execute([
-//                "meet_id" => $meet->CodicePub,
-//                "location" => fix_ficr_string($meet->Place),
-//                "name" => fix_ficr_string($meet->Description),
-//                "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
-//            ]);
-//        } catch (PDOException $e) {
-//        }
-//    }
-//}
+
+
+
+function fix_ficr_string($str) // courtesy of Gemini
+{
+    // FICR API sends UTF-8 strings that were doubly-encoded as Windows-1252.
+    // We reverse this by converting "From UTF-8 (interpreted)" -> "To Windows-1252 (bytes)"
+    return mb_convert_encoding($str, "Windows-1252", "UTF-8");
+}
+
+$years = range(2022, getdate()['year']);
+
+foreach ($years as $year) {
+    $meets = json_decode(file_get_contents("https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19"))->data;
+    foreach ($meets as $meet) {
+        $stmt = $conn->prepare("INSERT INTO meets (meet_id, location, name, date) VALUES (:meet_id, :location, :name, :date)");
+        try {
+            $stmt->execute([
+                "meet_id" => $meet->CodicePub,
+                "location" => fix_ficr_string($meet->Place),
+                "name" => fix_ficr_string($meet->Description),
+                "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
+            ]);
+        } catch (PDOException $e) {
+        }
+    }
+}
 
 $meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
 
@@ -358,7 +239,87 @@ foreach ($meetIDs as $meetID) {
 
 $races = $conn->query("SELECT * FROM races")->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($races as $race) {
+function to_milliseconds($time){
+    $millis = 0;
+    $temp = "";
+    for ($i = strlen($time) - 1; $i >= 0; $i--){
+        switch($time[$i]){
+            case '.':
+                $millis += intval($temp) * 10;
+                $temp = "";
+                break;
+            case '\'':
+                $millis += intval($temp) * 1000;
+                $temp = "";
+                break;
+            case ':':
+                $millis += intval($temp) * 1000 * 60;
+                $temp = "";
+                break;
+        }
+        $temp .= $time[$i];
+    }
+    $millis += intval($temp) * 1000 * 60 * 60;
 
-    echo $race;
+    return $millis;
+}
+
+foreach ($races as $race) {
+    $raceData = json_decode(file_get_contents("https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/result/" . str_replace(" ", "", $race["meet_id"]) . "/KY/" . str_replace("-", "/", str_replace(" ", "", $race["race_id"]))))->data;
+    print_r($raceData);
+    foreach ($raceData->data as $performance) {
+        $heat_index = $performance->b;
+        $heat_number = $performance->PlaCod;
+        $team_id = $performance->PlaTeamCod;
+
+        $conn->prepare("INSERT INTO heats (meet_id, race_id, heat_index, heat_id, start_time) values (:meet_id, :race_id, :heat_index, :heat_id, :start_time)")
+            ->execute(["meet_id" => $race["meet_id"], "race_id" => $race["race_id"], "heat_index" => $heat_index, "heat_id" => $heat_number, "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->Event->Date)->format('Y-m-d') . " " . $raceData->Event->Time . ":00"]);
+
+        $conn->prepare("INSERT INTO teams (team_id, name) values (:team_id, :team_name)")
+            ->execute(["team_id" => str_pad($team_id, 5, STR_PAD_LEFT), "team_name" => mb_convert_case($performance->TeamDescrIta, MB_CASE_TITLE, 'UTF-8')]);
+
+        $stmt = $conn->prepare("SELECT heat_id FROM heats WHERE race_id = :race_id AND heat_index = :heat_index");
+        $stmt->execute(["race_id" => $race["race_id"], "heat_index" => $heat_index]);
+        $heat_id = $stmt->fetch(PDO::FETCH_ASSOC)["heat_id"];
+
+
+        $time = 0;
+        $status;
+        switch ($performance->MemPrest) {
+            case "NP":
+                $status = "DNS";
+                break;
+            case "NA":
+                $status = "DNF";
+                break;
+            case "SQ":
+                $status = "DSQ";
+                break;
+            case "RIT":
+                $status = "RET";
+                break;
+            default:
+                $status = "OK";
+                $time = to_milliseconds($performance->MemPrest);
+                break;
+        }
+        $conn->prepare("INSERT INTO performances (heat_id, lane, placement, athlete_team_id, time, status) values (:heat_id, :lane, :placement, :team_id, :time, :status)")->execute([
+            "heat_id" => $heat_id,
+            "lane" => $performance->PlaLane,
+            "placement" => $performance->PlaCls,
+            "team_id" => str_pad($team_id, 5, STR_PAD_LEFT),
+            "time" => $time,
+            "status" => $status
+        ]);
+
+        if (defined('performance::Players') && count($performance->Players) > 0) {
+            foreach ($performance->Players as $athlete) {
+                $dob = strlen($athlete->PlaBirth) > 7 ? DateTime::createFromFormat('d/m/Y', $athlete->PlaBirth)->format('Y-m-d') : "1970-01-01";
+                $conn->prepare("INSERT INTO athletes (athlete_name, athlete_surname, birth_date) values (:name, :surname, :dob)")->execute(["name" => $athlete->PlaName, "surname" => mb_convert_case($athlete->PlaSurname, MB_CASE_TITLE, 'UTF-8'), "dob" => $dob]);
+            }
+        } else {
+            $dob = strlen($performance->PlaBirth) > 7 ? DateTime::createFromFormat('d/m/Y', $performance->PlaBirth)->format('Y-m-d') : "1970-01-01";
+            $conn->prepare("INSERT INTO athletes (name, surname, birth_date) values (:name, :surname, :dob)")->execute(["name" => $performance->PlaName, "surname" => mb_convert_case($performance->PlaSurname, MB_CASE_TITLE, 'UTF-8'), "dob" => $dob]);
+        }
+    }
 }
