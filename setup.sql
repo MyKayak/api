@@ -3,8 +3,7 @@ USE mykayak;
 DROP TABLE IF EXISTS followed_teams;
 DROP TABLE IF EXISTS followed_athletes;
 DROP TABLE IF EXISTS tokens;
-DROP TABLE IF EXISTS points;
-DROP TABLE IF EXISTS outcomes;
+
 DROP TABLE IF EXISTS performances_athletes;
 DROP TABLE IF EXISTS performances;
 DROP TABLE IF EXISTS heats;
@@ -21,11 +20,11 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE athletes (
-    athlete_id INT,
+    athlete_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     surname VARCHAR(255) NOT NULL,
     birth_date DATE,
-    PRIMARY KEY (athlete_id, name, surname)
+    UNIQUE KEY uq_athlete (name, surname, birth_date)
 );
 
 CREATE TABLE users (
@@ -59,22 +58,28 @@ CREATE TABLE heats (
     heat_id INT NOT NULL,
     race_id VARCHAR(255) NOT NULL,
     meet_id VARCHAR(255) NOT NULL,
-    heat_index INT NOT NULL,
     start_time DATETIME,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
     FOREIGN KEY (meet_id) REFERENCES races(meet_id) ON DELETE CASCADE,
-    PRIMARY KEY (heat_id, race_id, meet_id)
+    PRIMARY KEY (heat_id, race_id, meet_id),
+    UNIQUE KEY uq_heat (heat_id, race_id, meet_id)
 );
 
 CREATE TABLE performances (
     performance_id INT PRIMARY KEY AUTO_INCREMENT,
     heat_id INT NOT NULL,
-    team_id INT,
+    team_id CHAR(5),
     lane INT,
     placement INT,
-    time INT,
-    status VARCHAR(4) DEFAULT 'OK',
-    FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE
+    time_ms INT NULL,
+    status VARCHAR(3) NULL,
+    qual_info VARCHAR(255) NULL,
+    FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
+    CONSTRAINT chk_time_or_status CHECK (
+        (time_ms IS NOT NULL AND status IS NULL) OR
+        (time_ms IS NULL AND status IS NOT NULL) OR
+        (time_ms IS NULL AND status IS NULL)
+    )
 );
 
 CREATE TABLE performances_athletes (
@@ -83,18 +88,6 @@ CREATE TABLE performances_athletes (
     PRIMARY KEY (performance_id, athlete_id),
     FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE,
     FOREIGN KEY (athlete_id) REFERENCES athletes(athlete_id) ON DELETE CASCADE
-);
-
-CREATE TABLE outcomes (
-    performance_id INT PRIMARY KEY,
-    outcome_code VARCHAR(4) NOT NULL,
-    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE
-);
-
-CREATE TABLE points (
-    performance_id INT PRIMARY KEY,
-    points INT NOT NULL,
-    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE
 );
 
 CREATE TABLE tokens (
