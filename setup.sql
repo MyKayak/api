@@ -4,6 +4,8 @@ DROP TABLE IF EXISTS followed_teams;
 DROP TABLE IF EXISTS followed_athletes;
 DROP TABLE IF EXISTS tokens;
 
+
+DROP TABLE IF EXISTS outcomes;
 DROP TABLE IF EXISTS performances_athletes;
 DROP TABLE IF EXISTS performances;
 DROP TABLE IF EXISTS heats;
@@ -55,14 +57,15 @@ CREATE TABLE races (
 );
 
 CREATE TABLE heats (
-    heat_id INT NOT NULL,
+    heat_id INT AUTO INCREMENT,
+    heat_index INT NOT NULL,
     race_id VARCHAR(255) NOT NULL,
     meet_id VARCHAR(255) NOT NULL,
     start_time DATETIME,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
     FOREIGN KEY (meet_id) REFERENCES races(meet_id) ON DELETE CASCADE,
-    PRIMARY KEY (heat_id, race_id, meet_id),
-    UNIQUE KEY uq_heat (heat_id, race_id, meet_id)
+    PRIMARY KEY (heat_id),
+    UNIQUE KEY uq_heat (heat_index, race_id, meet_id)
 );
 
 CREATE TABLE performances (
@@ -74,12 +77,20 @@ CREATE TABLE performances (
     time_ms INT NULL,
     status VARCHAR(3) NULL,
     qual_info VARCHAR(255) NULL,
+    points INT DEFAULT 0,
     FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
     CONSTRAINT chk_time_or_status CHECK (
-        (time_ms IS NOT NULL AND status IS NULL) OR
-        (time_ms IS NULL AND status IS NOT NULL) OR
-        (time_ms IS NULL AND status IS NULL)
+        (time_ms IS NULL AND status IS NOT NULL)
+            OR
+        (time_ms IS NOT NULL AND status IS NULL)
     )
+);
+
+CREATE TABLE outcomes (
+    performance_id INT,
+    outcome VARCHAR(255),
+    FOREIGN KEY (performance_id) REFERENCES performances(performance_id) ON DELETE CASCADE,
+    UNIQUE KEY (performance_id, outcome)
 );
 
 CREATE TABLE performances_athletes (

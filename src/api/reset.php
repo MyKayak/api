@@ -26,97 +26,97 @@ function getOrInsertAthlete($conn, $name, $surname, $dob)
     }
 }
 
-$division_map = [
-    "SE" => "SEN", "U2" => "U23", "JU" => "JUN", "RA" => "RAG",
-    "CB" => "CDB", "CA" => "CDA", "AB" => "ALB", "AA" => "ALA",
-    "DA" => "DRA", "DB" => "DRB", "R1" => "RA1", "MA" => "MAA",
-    "MB" => "MAB", "MC" => "MAC", "MD" => "MAD", "ME" => "MAE",
-    "MF" => "MAF", "MG" => "MAG", "MH" => "MAH",
-];
-
-$distance_map = [
-    '01' => 200, '02' => 500, '03' => 1000, '04' => 2000, '05' => 5000,
-    '08' => 15000, '14' => 15000, '17' => 15000, '18' => 15000,
-    '09' => 17500, '10' => 12500, '11' => 12500, '39' => 12500,
-    '15' => 20000, '16' => 10000, '50' => 10000, '23' => 18000,
-    '28' => 21000, '29' => 24000, '30' => 38000, '36' => 5000, '38' => 17500,
-];
-
-$boat_map = [
-    '00' => "K2", '10' => "K2", '01' => "C1", '07' => "C1", '21' => "C1",
-    '02' => "C2", '08' => "C2", '03' => "C4", '04' => "K1", '09' => "K1",
-    '18' => "K1", '20' => "K1", '90' => "K1", '94' => "K1", '05' => "K2",
-    '06' => "K4", '11' => "K4", '12' => "K4", '13' => "V2", '15' => "V2",
-    '14' => "V1", '19' => "MX", '24' => "S1", '25' => "S2", '26' => "O1",
-    '27' => "O2", '99' => "DB",
-];
-
-$level_map = [
-    "001" => "HT", "003" => "SF", "005" => "FA",
-    "006" => "DF", "007" => "SR",
-];
-
-$years = range(2022, getdate()['year']);
-
-foreach ($years as $year) {
-    $meets_url = "https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19";
-    $meets_json = @file_get_contents($meets_url);
-    if ($meets_json === false) {
-        error_log("Failed to fetch meets from URL: " . $meets_url);
-        continue;
-    }
-    $meets = json_decode($meets_json)->data;
-
-    foreach ($meets as $meet) {
-        $stmt = $conn->prepare("INSERT IGNORE INTO meets (meet_id, location, name, date) VALUES (:meet_id, :location, :name, :date)");
-        $stmt->execute([
-            "meet_id" => $meet->CodicePub,
-            "location" => fix_ficr_string($meet->Place),
-            "name" => fix_ficr_string($meet->Description),
-            "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
-        ]);
-    }
-}
-
-$meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
-
-foreach ($meetIDs as $meetID) {
-    $program_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-30/get/programdate/$meetID";
-    $program_json = @file_get_contents($program_url);
-    if ($program_json === false) {
-        error_log("Failed to fetch program from URL: " . $program_url);
-        continue;
-    }
-    $raceDays = json_decode($program_json)->data;
-
-    foreach ($raceDays as $raceDay) {
-        if (!isset($raceDay->e)) continue;
-
-        foreach ($raceDay->e as $race) {
-            $division = $division_map[substr($race->c0, 0, 2)] ?? null;
-            $category = in_array(substr($race->c0, 2), ["M", "F"]) ? substr($race->c0, 2) : "X";
-            $distance = $distance_map[substr($race->c1, 2, 4)] ?? null;
-            $boat = $boat_map[substr($race->c1, 0, 2)] ?? null;
-            $level = $level_map[$race->c2] ?? null;
-
-            if (!$division || !$distance || !$boat || !$level) {
-                error_log("Could not decode race details for race code: $race->c0-$race->c1-$race->c2 in meet $meetID");
-                continue;
-            }
-
-            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_id, meet_id, distance, division, category, boat, level) VALUES (:race_id, :meet_id, :distance, :division, :category, :boat, :level)");
-            $stmt->execute([
-                "meet_id" => $meetID,
-                "race_id" => "$race->c0-$race->c1-" . substr($race->c2, 1) . "-$race->c3",
-                "distance" => $distance,
-                "division" => $division,
-                "category" => $category,
-                "boat" => $boat,
-                "level" => $level
-            ]);
-        }
-    }
-}
+//$division_map = [
+//    "SE" => "SEN", "U2" => "U23", "JU" => "JUN", "RA" => "RAG",
+//    "CB" => "CDB", "CA" => "CDA", "AB" => "ALB", "AA" => "ALA",
+//    "DA" => "DRA", "DB" => "DRB", "R1" => "RA1", "MA" => "MAA",
+//    "MB" => "MAB", "MC" => "MAC", "MD" => "MAD", "ME" => "MAE",
+//    "MF" => "MAF", "MG" => "MAG", "MH" => "MAH",
+//];
+//
+//$distance_map = [
+//    '01' => 200, '02' => 500, '03' => 1000, '04' => 2000, '05' => 5000,
+//    '08' => 15000, '14' => 15000, '17' => 15000, '18' => 15000,
+//    '09' => 17500, '10' => 12500, '11' => 12500, '39' => 12500,
+//    '15' => 20000, '16' => 10000, '50' => 10000, '23' => 18000,
+//    '28' => 21000, '29' => 24000, '30' => 38000, '36' => 5000, '38' => 17500,
+//];
+//
+//$boat_map = [
+//    '00' => "K2", '10' => "K2", '01' => "C1", '07' => "C1", '21' => "C1",
+//    '02' => "C2", '08' => "C2", '03' => "C4", '04' => "K1", '09' => "K1",
+//    '18' => "K1", '20' => "K1", '90' => "K1", '94' => "K1", '05' => "K2",
+//    '06' => "K4", '11' => "K4", '12' => "K4", '13' => "V2", '15' => "V2",
+//    '14' => "V1", '19' => "MX", '24' => "S1", '25' => "S2", '26' => "O1",
+//    '27' => "O2", '99' => "DB",
+//];
+//
+//$level_map = [
+//    "001" => "HT", "003" => "SF", "005" => "FA",
+//    "006" => "DF", "007" => "SR",
+//];
+//
+//$years = range(2022, getdate()['year']);
+//
+//foreach ($years as $year) {
+//    $meets_url = "https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19";
+//    $meets_json = @file_get_contents($meets_url);
+//    if ($meets_json === false) {
+//        error_log("Failed to fetch meets from URL: " . $meets_url);
+//        continue;
+//    }
+//    $meets = json_decode($meets_json)->data;
+//
+//    foreach ($meets as $meet) {
+//        $stmt = $conn->prepare("INSERT IGNORE INTO meets (meet_id, location, name, date) VALUES (:meet_id, :location, :name, :date)");
+//        $stmt->execute([
+//            "meet_id" => $meet->CodicePub,
+//            "location" => fix_ficr_string($meet->Place),
+//            "name" => fix_ficr_string($meet->Description),
+//            "date" => DateTime::createFromFormat('d/m/Y', $meet->Data)->format('Y-m-d')
+//        ]);
+//    }
+//}
+//
+//$meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
+//
+//foreach ($meetIDs as $meetID) {
+//    $program_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-30/get/programdate/$meetID";
+//    $program_json = @file_get_contents($program_url);
+//    if ($program_json === false) {
+//        error_log("Failed to fetch program from URL: " . $program_url);
+//        continue;
+//    }
+//    $raceDays = json_decode($program_json)->data;
+//
+//    foreach ($raceDays as $raceDay) {
+//        if (!isset($raceDay->e)) continue;
+//
+//        foreach ($raceDay->e as $race) {
+//            $division = $division_map[substr($race->c0, 0, 2)] ?? null;
+//            $category = in_array(substr($race->c0, 2), ["M", "F"]) ? substr($race->c0, 2) : "X";
+//            $distance = $distance_map[substr($race->c1, 2, 4)] ?? null;
+//            $boat = $boat_map[substr($race->c1, 0, 2)] ?? null;
+//            $level = $level_map[$race->c2] ?? null;
+//
+//            if (!$division || !$distance || !$boat || !$level) {
+//                error_log("Could not decode race details for race code: $race->c0-$race->c1-$race->c2 in meet $meetID");
+//                continue;
+//            }
+//
+//            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_id, meet_id, distance, division, category, boat, level) VALUES (:race_id, :meet_id, :distance, :division, :category, :boat, :level)");
+//            $stmt->execute([
+//                "meet_id" => $meetID,
+//                "race_id" => "$race->c0-$race->c1-" . substr($race->c2, 1) . "-$race->c3",
+//                "distance" => $distance,
+//                "division" => $division,
+//                "category" => $category,
+//                "boat" => $boat,
+//                "level" => $level
+//            ]);
+//        }
+//    }
+//}
 
 $races = $conn->query("SELECT * FROM races")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -150,11 +150,11 @@ foreach ($races as $race) {
         try {
             $team_id = $performance->PlaTeamCod;
 
-            $stmt = $conn->prepare("INSERT IGNORE INTO heats (meet_id, race_id, heat_id, start_time) values (:meet_id, :race_id, :heat_id, :start_time)");
+            $stmt = $conn->prepare("INSERT IGNORE INTO heats (meet_id, race_id, heat_index, start_time) values (:meet_id, :race_id, :heat_index, :start_time)");
             $stmt->execute([
                 "meet_id" => $race["meet_id"],
                 "race_id" => $race["race_id"],
-                "heat_id" => $performance->b,
+                "heat_index" => $performance->b,
                 "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date)->format('Y-m-d') . " " . $raceData->data->Event->Time . ":00"
             ]);
 
@@ -175,7 +175,7 @@ foreach ($races as $race) {
 
             if (in_array($mem_prest_val, $status_codes)) {
                 $status = $codes_equiv[$mem_prest_val];
-            } elseif (!empty($mem_prest_val) && $mem_prest_val !== " ") { // Check for non-empty and not just a space
+            } elseif (!empty($mem_prest_val) && $mem_prest_val !== " ") {
                 $time_ms = to_milliseconds($mem_prest_val);
             }
 
@@ -187,11 +187,11 @@ foreach ($races as $race) {
             }
 
             $stmt = $conn->prepare(
-                "INSERT IGNORE INTO performances (heat_id, team_id, lane, placement, time_ms, status, qual_info) 
-                 VALUES (:heat_id, :team_id, :lane, :placement, :time_ms, :status, :qual_info)"
+                "INSERT IGNORE INTO performances (heat_index, team_id, lane, placement, time_ms, status, qual_info) 
+                 VALUES (:heat_index, :team_id, :lane, :placement, :time_ms, :status, :qual_info)"
             );
             $stmt->execute([
-                "heat_id" => $heat_id,
+                "heat_index" => $performance->b,
                 "team_id" => $team_id_padded,
                 "lane" => $performance->PlaLane,
                 "placement" => $performance->PlaCls,
