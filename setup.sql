@@ -57,7 +57,7 @@ CREATE TABLE races (
 );
 
 CREATE TABLE heats (
-    heat_id INT AUTO INCREMENT,
+    heat_id INT AUTO_INCREMENT,
     heat_index INT NOT NULL,
     race_id VARCHAR(255) NOT NULL,
     meet_id VARCHAR(255) NOT NULL,
@@ -76,7 +76,6 @@ CREATE TABLE performances (
     placement INT,
     time_ms INT NULL,
     status VARCHAR(3) NULL,
-    qual_info VARCHAR(255) NULL,
     points INT DEFAULT 0,
     FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
     CONSTRAINT chk_time_or_status CHECK (
@@ -124,4 +123,3 @@ CREATE TABLE followed_teams (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE
 );
-

@@ -157,6 +157,7 @@ foreach ($races as $race) {
                 "heat_index" => $performance->b,
                 "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date)->format('Y-m-d') . " " . $raceData->data->Event->Time . ":00"
             ]);
+            $heat_id = $conn->lastInsertId();
 
             $team_id_padded = str_pad($team_id, 5, "0", STR_PAD_LEFT);
             $stmt = $conn->prepare("INSERT IGNORE INTO teams (team_id, name) values (:team_id, :team_name)");
@@ -182,27 +183,33 @@ foreach ($races as $race) {
             $race_id_parts = explode('-', $race['race_id']);
             $c3 = end($race_id_parts);
 
-            if (!empty($performance->MemQual)) {
-                $qual_info = $performance->MemQual;
-            }
-
             $stmt = $conn->prepare(
-                "INSERT IGNORE INTO performances (heat_index, team_id, lane, placement, time_ms, status, qual_info) 
-                 VALUES (:heat_index, :team_id, :lane, :placement, :time_ms, :status, :qual_info)"
+                "INSERT IGNORE INTO performances (heat_id, team_id, lane, placement, time_ms, status) 
+                 VALUES (:heat_id, :team_id, :lane, :placement, :time_ms, :status)"
             );
             $stmt->execute([
-                "heat_index" => $performance->b,
+                "heat_id" => $heat_id,
                 "team_id" => $team_id_padded,
                 "lane" => $performance->PlaLane,
                 "placement" => $performance->PlaCls,
                 "time_ms" => $time_ms,
                 "status" => $status,
-                "qual_info" => $qual_info
             ]);
             $performance_id = $conn->lastInsertId();
 
             if ($performance_id == 0) {
                 continue;
+            }
+
+            if (!empty($performance->MemQual)){
+                $stmt = $conn->prepare(
+                    "INSERT IGNORE INTO outcomes (performance_id, outcome) 
+                 VALUES (:performance_id, :outcome)"
+                );
+                $stmt->execute([
+                    "performance_id" => $performance_id,
+                    "outcome" => $performance->MemQual
+                ]);
             }
 
             $athletes_to_insert = [];
