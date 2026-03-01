@@ -8,8 +8,8 @@ function create_api_key($description){
         exit;
     }
 
-    $stmt = $conn->prepare("INSERT INTO api_keys (key, description) VALUES (:key, :description)")->execute([
-        "key" => hash("sha256", $key),
+    $stmt = $conn->prepare("INSERT INTO api_keys (api_key, description) VALUES (:api_key, :description)")->execute([
+        "api_key" => hash("sha256", $key),
         "description" => $description
     ]);
 

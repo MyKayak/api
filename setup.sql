@@ -1,9 +1,11 @@
 USE mykayak;
 
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS admin_api_keys;
+
 DROP TABLE IF EXISTS followed_teams;
 DROP TABLE IF EXISTS followed_athletes;
 DROP TABLE IF EXISTS tokens;
-
 
 DROP TABLE IF EXISTS outcomes;
 DROP TABLE IF EXISTS performances_athletes;
@@ -122,4 +124,18 @@ CREATE TABLE followed_teams (
     PRIMARY KEY (user_id, team_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE
+);
+
+CREATE TABLE api_keys (
+    api_key CHAR(64) PRIMARY KEY,
+    description VARCHAR(255),
+    is_active BOOL DEFAULT TRUE,
+    uses INT DEFAULT 0
+);
+
+CREATE TABLE admin_api_keys (
+    api_key CHAR(64) PRIMARY KEY,
+    description VARCHAR(255),
+    is_active BOOL DEFAULT TRUE,
+    uses INT DEFAULT 0
 );
