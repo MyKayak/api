@@ -14,7 +14,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         switch ($path[0]) {
             case 'create_key':
                 require_once 'utils/auth.php';
-                if(!verifyAdminApiKey($_SERVER["X-ADMIN-API-KEY"])){
+                if(!verifyAdminApiKey($_SERVER["HTTP_X_ADMIN_API_KEY"])){
                     header("HTTP/1.1 401 Unauthorized");
                     exit;
                 }
