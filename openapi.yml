@@ -6,79 +6,35 @@ info:
 servers:
   - url: https://api.mykayak.fuffo.net
     description: Production server
-paths:
-  /athletes:
-    get:
-      summary: Get list of athletes
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                    name:
-                      type: string
-  /athlete/{id}:
-    get:
-      summary: Get athlete by ID
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  records:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        distance:
-                          type: integer # in meters
-                        time:
-                          type: integer # in milliseconds
-                        heatId:
-                          type: string
-                          format: uuid
-                  heats:
-                    type: array
-                    items:
-                      type: string
-                      format: uuid
+components:
+  securitySchemes:
+    standardAuth:
+      type: apiKey
+      in: cookie
+      name: X-API-KEY
+    adminAuth:
+      type: apiKey
+      in: cookie
+      name: X-ADMIN-API-KEY
 
-      parameters:
-        - name: heatLimit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 0
-  /performance/{id}:
-    get:
-      summary: Get performance by ID
-      description: A performance contains the results or startlist entry of an athlete within a specific heat.
-      parameters:
-        - name: results
-          in: query
-          required: false
-          description: Whether to include results in the response or just send the startlist entry.
-          schema:
-            type: boolean
-            default: true
-  /heat/{id}:
-    get:
-      summary: Get heat by ID
-      description: A heat is singular instance of a race.
+paths:
+  /create_key:
+    post:
+      summary: Create a new api key
+      description: Requires an admin api key, returns the generated api key once it has been inserted with the given description.
+      security:
+        - adminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+
+
       responses:
         "200":
           description: Successful response
@@ -87,25 +43,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  dateTime:
+                  key:
                     type: string
-                    format: date-time
-                  distance:
-                    type: integer # in meters
-                  raceId:
-                    type: string
-                    format: uuid
-                  lane:
-                    type: integer
-                  placement:
-                    type: integer
-                  time:
-                    type: integer
-  /race/{id}:
-    get:
-      summary: Get race by ID
-      description: A race is a collection of heats that share the same distance and category.
-  /meet/{id}:
-    get:
-      summary: Get meet by ID
-      description: A meet is a collection of races that are grouped on the same day in the same location.
+                    example: bb4c16ee45465d0a
+        "401":
+          description: Unauthorized
