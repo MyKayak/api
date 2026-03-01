@@ -2,7 +2,7 @@
 
 set_time_limit(40 * 60);
 
-require_once '../connect.php';
+require_once 'connect.php';
 
 function fix_ficr_string($str) // courtesy of Gemini
 {
@@ -155,7 +155,7 @@ foreach ($races as $race) {
                 "meet_id" => $race["meet_id"],
                 "race_id" => $race["race_id"],
                 "heat_index" => $performance->b,
-                "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date)->format('Y-m-d') . " " . $raceData->data->Event->Time . ":00"
+                "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date)->format('Y-m-d') . " reset.php" . $raceData->data->Event->Time . ":00"
             ]);
             $heat_id = $conn->lastInsertId();
 
