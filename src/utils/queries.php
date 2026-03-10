@@ -13,3 +13,23 @@ function getMeets(){
     }
     return json_encode($meets);
 }
+
+function getRaces($meet_id){
+    require "connect.php";
+    $races = [];
+    $stmt = $conn->prepare("SELECT * FROM races WHERE meet_id = :meet_id");
+    $meet_id = str_replace("%20"," ", $meet_id);
+    $stmt->bindParam(":meet_id", $meet_id);
+    $stmt->execute();
+    foreach($stmt->fetchAll() as $race){
+        $races[] = [
+            "id" => $race["race_id"],
+            "distance" => $race["distance"],
+            "division" => $race["division"],
+            "category" => $race["category"],
+            "boat" => $race["boat"],
+            "level" => $race["level"],
+        ];
+    }
+    return json_encode($races);
+}

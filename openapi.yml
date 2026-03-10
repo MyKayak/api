@@ -42,6 +42,42 @@ paths:
                     date:
                       type: string
                       format: date
+  /races/{meet_id}:
+    get:
+      summary: Get meets
+      security:
+        - standardAuth: [ ]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    distance:
+                      type: number
+                    division:
+                      type: string
+                    category:
+                      type: string
+                    boat:
+                      type: string
+                    level:
+                      type: string
+
+                      "id" => $race["race_id"],
+                      "distance" => $race["distance"],
+                      "division" => $race["division"],
+                      "category" => $race["category"],
+                      "boat" => $race["boat"],
+                      "level" => $race["level"],
+        "400":
+          description: A race id was not provided
   /create_key:
     post:
       summary: Create a new api key

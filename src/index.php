@@ -7,9 +7,20 @@ header('Content-Type: application/json; charset=utf-8');
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
         switch ($path[0]) {
+            case "races":
+                if(!isset($path[0])){
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                require "utils/queries.php";
+                echo getRaces($path[1]);
+                exit;
+
             case "meets":
+                // TODO : require auth
                 require "utils/queries.php";
                 echo getMeets();
+                exit;
         }
         break;
     case "POST":
