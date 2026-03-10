@@ -95,6 +95,37 @@ paths:
                       format: date_time
         "400":
           description: A meet and/or race id was not provided
+  /performances/{heat_id}:
+    get:
+      summary: Get performances
+      security:
+        - standardAuth: [ ]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    team_id:
+                      type: string
+                    lane:
+                      type: number
+                    placement:
+                      type: number
+                    time_ms:
+                      type: number
+                    status:
+                      type: string
+                    points:
+                      type: number
+        "400":
+          description: A heat id was not provided
   /create_key:
     post:
       summary: Create a new api key

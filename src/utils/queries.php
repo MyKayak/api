@@ -42,12 +42,32 @@ function getHeats($meet_id, $race_id){
     $stmt->bindParam(":meet_id", $meet_id);
     $stmt->bindParam(":race_id", $race_id);
     $stmt->execute();
-    foreach($stmt->fetchAll() as $race){
+    foreach($stmt->fetchAll() as $heat){
         $heats[] = [
-            "id" => $race["heat_id"],
-            "index" => $race["heat_index"],
-            "start_time" => $race["start_time"],
+            "id" => $heat["heat_id"],
+            "index" => $heat["heat_index"],
+            "start_time" => $heat["start_time"],
         ];
     }
     return json_encode($heats);
+}
+
+function getPerformances($heat_id){
+    require "connect.php";
+    $performances = [];
+    $stmt = $conn->prepare("SELECT * FROM performances WHERE heat_id = :heat_id");
+    $stmt->bindParam(":heat_id", $heat_id);
+    $stmt->execute();
+    foreach($stmt->fetchAll() as $performance){
+        $performances[] = [
+            "id" => $performance["performance_id"],
+            "team_id" => $performance["team_id"],
+            "lane" => $performance["lane"],
+            "placement" => $performance["placement"],
+            "time_ms" => $performance["time_ms"],
+            "status" => $performance["status"],
+            "points" => $performance["points"]
+        ];
+    }
+    return json_encode($performances);
 }

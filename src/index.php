@@ -30,6 +30,15 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 require "utils/queries.php";
                 echo getHeats($path[1], $path[2]);
                 exit;
+            case "performances":
+                if(!isset($path[1])){
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                // TODO : require auth
+                require "utils/queries.php";
+                echo getPerformances($path[1]);
+                exit;
         }
         break;
     case "POST":
