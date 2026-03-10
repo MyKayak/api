@@ -33,3 +33,21 @@ function getRaces($meet_id){
     }
     return json_encode($races);
 }
+
+function getHeats($meet_id, $race_id){
+    require "connect.php";
+    $heats = [];
+    $stmt = $conn->prepare("SELECT * FROM heats WHERE meet_id = :meet_id AND race_id = :race_id");
+    $meet_id = str_replace("%20"," ", $meet_id);
+    $stmt->bindParam(":meet_id", $meet_id);
+    $stmt->bindParam(":race_id", $race_id);
+    $stmt->execute();
+    foreach($stmt->fetchAll() as $race){
+        $heats[] = [
+            "id" => $race["heat_id"],
+            "index" => $race["heat_index"],
+            "start_time" => $race["start_time"],
+        ];
+    }
+    return json_encode($heats);
+}

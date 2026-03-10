@@ -44,7 +44,7 @@ paths:
                       format: date
   /races/{meet_id}:
     get:
-      summary: Get meets
+      summary: Get races
       security:
         - standardAuth: [ ]
       responses:
@@ -69,15 +69,32 @@ paths:
                       type: string
                     level:
                       type: string
-
-                      "id" => $race["race_id"],
-                      "distance" => $race["distance"],
-                      "division" => $race["division"],
-                      "category" => $race["category"],
-                      "boat" => $race["boat"],
-                      "level" => $race["level"],
         "400":
-          description: A race id was not provided
+          description: A meet id was not provided
+  /heats/{meet_id}/{race_id}:
+    get:
+      summary: Get heats
+      security:
+        - standardAuth: [ ]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    index:
+                      type: number
+                    start_time:
+                      type: string
+                      format: date_time
+        "400":
+          description: A meet and/or race id was not provided
   /create_key:
     post:
       summary: Create a new api key
@@ -93,8 +110,6 @@ paths:
               properties:
                 description:
                   type: string
-
-
       responses:
         "200":
           description: Successful response
