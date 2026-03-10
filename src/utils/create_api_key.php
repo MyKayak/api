@@ -1,5 +1,5 @@
 <?php
-function create_api_key($description){
+function createApiKey($description){
     require "connect.php";
     try {
         $key = bin2hex(random_bytes(8));

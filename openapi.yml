@@ -18,6 +18,30 @@ components:
       name: X-ADMIN-API-KEY
 
 paths:
+  /meets:
+    get:
+      summary: Get meets
+      security:
+        - standardAuth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    location:
+                      type: string
+                    date:
+                      type: string
+                      format: date
   /create_key:
     post:
       summary: Create a new api key

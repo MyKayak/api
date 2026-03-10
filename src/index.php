@@ -7,7 +7,9 @@ header('Content-Type: application/json; charset=utf-8');
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
         switch ($path[0]) {
-
+            case "meets":
+                require "utils/queries.php";
+                echo getMeets();
         }
         break;
     case "POST":

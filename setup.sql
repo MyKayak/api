@@ -139,3 +139,4 @@ CREATE TABLE admin_api_keys (
     is_active BOOL DEFAULT TRUE,
     uses INT DEFAULT 0
 );
+
