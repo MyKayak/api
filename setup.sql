@@ -47,7 +47,8 @@ CREATE TABLE meets (
 );
 
 CREATE TABLE races (
-    race_id VARCHAR(255) NOT NULL,
+    race_id INT AUTO_INCREMENT PRIMARY KEY,
+    race_code VARCHAR(255) NOT NULL,
     meet_id VARCHAR(255) NOT NULL,
     distance INT NOT NULL,
     division CHAR(3) NOT NULL,
@@ -55,19 +56,17 @@ CREATE TABLE races (
     boat CHAR(2) NOT NULL,
     level CHAR(2) NOT NULL,
     FOREIGN KEY (meet_id) REFERENCES meets(meet_id) ON DELETE CASCADE,
-    PRIMARY KEY (race_id, meet_id)
+    UNIQUE KEY (race_code, meet_id)
 );
 
 CREATE TABLE heats (
     heat_id INT AUTO_INCREMENT,
     heat_index INT NOT NULL,
-    race_id VARCHAR(255) NOT NULL,
-    meet_id VARCHAR(255) NOT NULL,
+    race_id INT NOT NULL,
     start_time DATETIME,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
-    FOREIGN KEY (meet_id) REFERENCES races(meet_id) ON DELETE CASCADE,
     PRIMARY KEY (heat_id),
-    UNIQUE KEY uq_heat (heat_index, race_id, meet_id)
+    UNIQUE KEY uq_heat (heat_index, race_id)
 );
 
 CREATE TABLE performances (

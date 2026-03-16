@@ -4,7 +4,7 @@ set_time_limit(40 * 60);
 
 require_once '../src/utils/connect.php';
 
-function fix_ficr_string($str) // courtesy of Gemini
+function fix_ficr_string($str) // courtesy of Gemini <3
 {
     // FICR API sends UTF-8 strings that were doubly-encoded as Windows-1252.
     // We reverse this by converting "From UTF-8 (interpreted)" -> "To Windows-1252 (bytes)"
@@ -104,10 +104,10 @@ foreach ($meetIDs as $meetID) {
                 continue;
             }
 
-            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_id, meet_id, distance, division, category, boat, level) VALUES (:race_id, :meet_id, :distance, :division, :category, :boat, :level)");
+            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_code, meet_id, distance, division, category, boat, level) VALUES (:race_code, :meet_id, :distance, :division, :category, :boat, :level)");
             $stmt->execute([
                 "meet_id" => $meetID,
-                "race_id" => "$race->c0-$race->c1-" . substr($race->c2, 1) . "-$race->c3",
+                "race_code" => "$race->c0-$race->c1-" . substr($race->c2, 1) . "-$race->c3",
                 "distance" => $distance,
                 "division" => $division,
                 "category" => $category,
@@ -135,7 +135,7 @@ function to_milliseconds($time)
 }
 
 foreach ($races as $race) {
-    $result_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/result/" . str_replace(" ", "", $race["meet_id"]) . "/KY/" . str_replace("-", "/", str_replace(" ", "", $race["race_id"]));
+    $result_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/result/" . str_replace(" ", "", $race["meet_id"]) . "/KY/" . str_replace("-", "/", str_replace(" ", "", $race["race_code"]));
     $race_json = @file_get_contents($result_url);
     if ($race_json === false) {
         error_log("Failed to fetch result from URL: " . $result_url);
@@ -150,14 +150,35 @@ foreach ($races as $race) {
         try {
             $team_id = $performance->PlaTeamCod;
 
-            $stmt = $conn->prepare("INSERT IGNORE INTO heats (meet_id, race_id, heat_index, start_time) values (:meet_id, :race_id, :heat_index, :start_time)");
+            $eventDate = DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date);
+            $startTime = null;
+            if ($eventDate) {
+                $startTime = $eventDate->format('Y-m-d') . " " . ($raceData->data->Event->Time ?? "00:00") . ":00";
+            }
+
+            $stmt = $conn->prepare("INSERT IGNORE INTO heats (race_id, heat_index, start_time) values (:race_id, :heat_index, :start_time)");
             $stmt->execute([
-                "meet_id" => $race["meet_id"],
                 "race_id" => $race["race_id"],
                 "heat_index" => $performance->b,
-                "start_time" => DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date)->format('Y-m-d') . " reset.php" . $raceData->data->Event->Time . ":00"
+                "start_time" => $startTime
             ]);
             $heat_id = $conn->lastInsertId();
+
+            if ($heat_id == 0) {
+                // If INSERT IGNORE ignored the row, we need to fetch the existing heat_id
+                $stmt_get_heat = $conn->prepare("SELECT heat_id FROM heats WHERE race_id = :race_id AND heat_index = :heat_index");
+                $stmt_get_heat->execute([
+                    "race_id" => $race["race_id"],
+                    "heat_index" => $performance->b
+                ]);
+                $heat_row = $stmt_get_heat->fetch(PDO::FETCH_ASSOC);
+                if ($heat_row) {
+                    $heat_id = $heat_row['heat_id'];
+                } else {
+                    error_log("Failed to retrieve heat_id for race " . $race['race_id'] . " index " . $performance->b);
+                    continue;
+                }
+            }
 
             $team_id_padded = str_pad($team_id, 5, "0", STR_PAD_LEFT);
             $stmt = $conn->prepare("INSERT IGNORE INTO teams (team_id, name) values (:team_id, :team_name)");
@@ -180,7 +201,7 @@ foreach ($races as $race) {
                 $time_ms = to_milliseconds($mem_prest_val);
             }
 
-            $race_id_parts = explode('-', $race['race_id']);
+            $race_id_parts = explode('-', $race['race_code']);
             $c3 = end($race_id_parts);
 
             $stmt = $conn->prepare(
@@ -195,6 +216,7 @@ foreach ($races as $race) {
                 "time_ms" => $time_ms,
                 "status" => $status,
             ]);
+
             $performance_id = $conn->lastInsertId();
 
             if ($performance_id == 0) {

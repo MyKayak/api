@@ -24,6 +24,7 @@ function getRaces($meet_id){
     foreach($stmt->fetchAll() as $race){
         $races[] = [
             "id" => $race["race_id"],
+            "code" => $race["race_code"],
             "distance" => $race["distance"],
             "division" => $race["division"],
             "category" => $race["category"],
@@ -71,3 +72,17 @@ function getPerformances($heat_id){
     }
     return json_encode($performances);
 }
+
+function getMedalTable($meet_id){
+    require "connect.php";
+    $stmt = $conn->prepare("SELECT * FROM meets WHERE meets.meet_id = :meet_id INNER JOIN races ON meets.meet_id = ");
+}
+/*
+SELECT * FROM meets
+INNER JOIN races ON meets.meet_id = races.meet_id
+INNER JOIN heats ON races.meet_id = heats.meet_id AND races.race_id = heats.race_id
+INNER JOIN performances USING (heat_id)
+WHERE meets.meet_id = "CanoaCastelGandolfoRM04082024_92"
+AND (level = "SR"
+    OR level = "DF"
+    OR level = "FA");*/
