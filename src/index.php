@@ -13,7 +13,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo getMeets();
                 exit;
             case "races":
-                if(!isset($path[1])){
+                if(empty($path[1])) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
@@ -22,22 +22,23 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo getRaces($path[1]);
                 exit;
             case "heats":
-                if(!isset($path[1]) || !isset($path[2])){
+                if(empty($path[1])){
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo getHeats($path[1], $path[2]);
+                $heats = getHeats($path[1]);
+                echo json_encode($heats);
                 exit;
-            case "performances":
-                if(!isset($path[1])){
+            case "medal_table":
+                if(empty($path[1])) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo getPerformances($path[1]);
+                echo getMedalTable($path[1]);
                 exit;
         }
         break;

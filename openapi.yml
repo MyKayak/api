@@ -58,6 +58,8 @@ paths:
                   type: object
                   properties:
                     id:
+                      type: number
+                    code:
                       type: string
                     distance:
                       type: number

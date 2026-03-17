@@ -35,12 +35,10 @@ function getRaces($meet_id){
     return json_encode($races);
 }
 
-function getHeats($meet_id, $race_id){
+function getHeats($race_id){
     require "connect.php";
     $heats = [];
-    $stmt = $conn->prepare("SELECT * FROM heats WHERE meet_id = :meet_id AND race_id = :race_id");
-    $meet_id = str_replace("%20"," ", $meet_id);
-    $stmt->bindParam(":meet_id", $meet_id);
+    $stmt = $conn->prepare("SELECT * FROM heats WHERE  race_id = :race_id");
     $stmt->bindParam(":race_id", $race_id);
     $stmt->execute();
     foreach($stmt->fetchAll() as $heat){
@@ -48,9 +46,10 @@ function getHeats($meet_id, $race_id){
             "id" => $heat["heat_id"],
             "index" => $heat["heat_index"],
             "start_time" => $heat["start_time"],
+            "performances" => getPerformances($heat["heat_id"]),
         ];
     }
-    return json_encode($heats);
+    return $heats;
 }
 
 function getPerformances($heat_id){
@@ -67,22 +66,35 @@ function getPerformances($heat_id){
             "placement" => $performance["placement"],
             "time_ms" => $performance["time_ms"],
             "status" => $performance["status"],
-            "points" => $performance["points"]
+            "points" => $performance["points"],
+            "athletes" => getAthletes($performance["performance_id"]),
         ];
     }
-    return json_encode($performances);
+    return $performances;
+}
+
+function getAthletes($performance_id){
+    require "connect.php";
+    $athletes = [];
+
+    $stmt = $conn->prepare("SELECT name, surname, birth_date FROM athletes INNER JOIN performances_athletes USING (athlete_id) INNER JOIN performances USING (performance_id) WHERE performance_id = :performance_id");
+    $stmt->bindParam(":performance_id", $performance_id);
+    $stmt->execute();
+    foreach($stmt->fetchAll() as $athlete){
+        $athletes[] = [
+            "name" => $athlete["name"],
+            "surname" => $athlete["surname"],
+            "birth_date" => $athlete["birth_date"],
+        ];
+    }
+    return $athletes;
 }
 
 function getMedalTable($meet_id){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT * FROM meets WHERE meets.meet_id = :meet_id INNER JOIN races ON meets.meet_id = ");
+    $meet_id = str_replace("%20"," ", $meet_id);
+    $stmt = $conn->prepare("SELECT * FROM medal_table_view WHERE meet_id = :meet_id ORDER BY gold DESC, silver DESC, bronze DESC");
+    $stmt->bindParam(":meet_id", $meet_id);
+    $stmt->execute();
+    return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
 }
-/*
-SELECT * FROM meets
-INNER JOIN races ON meets.meet_id = races.meet_id
-INNER JOIN heats ON races.meet_id = heats.meet_id AND races.race_id = heats.race_id
-INNER JOIN performances USING (heat_id)
-WHERE meets.meet_id = "CanoaCastelGandolfoRM04082024_92"
-AND (level = "SR"
-    OR level = "DF"
-    OR level = "FA");*/
