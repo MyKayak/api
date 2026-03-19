@@ -55,25 +55,26 @@ function getHeats($race_id){
 function getPerformances($heat_id){
     require "connect.php";
     $performances = [];
-    $stmt = $conn->prepare("SELECT * FROM performances WHERE heat_id = :heat_id");
+    $stmt = $conn->prepare("SELECT * FROM performances INNER JOIN teams USING (team_id) WHERE heat_id = :heat_id");
     $stmt->bindParam(":heat_id", $heat_id);
     $stmt->execute();
     foreach($stmt->fetchAll() as $performance){
         $performances[] = [
             "id" => $performance["performance_id"],
             "team_id" => $performance["team_id"],
+            "team_name" => $performance["name"],
             "lane" => $performance["lane"],
             "placement" => $performance["placement"],
             "time_ms" => $performance["time_ms"],
             "status" => $performance["status"],
             "points" => $performance["points"],
-            "athletes" => getAthletes($performance["performance_id"]),
+            "athletes" => getPerformanceAthletes($performance["performance_id"]),
         ];
     }
     return $performances;
 }
 
-function getAthletes($performance_id){
+function getPerformanceAthletes($performance_id){
     require "connect.php";
     $athletes = [];
 
@@ -82,8 +83,7 @@ function getAthletes($performance_id){
     $stmt->execute();
     foreach($stmt->fetchAll() as $athlete){
         $athletes[] = [
-            "name" => $athlete["name"],
-            "surname" => $athlete["surname"],
+            "name" => $athlete["name"], "surname" => $athlete["surname"],
             "birth_date" => $athlete["birth_date"],
         ];
     }
@@ -98,3 +98,16 @@ function getMedalTable($meet_id){
     $stmt->execute();
     return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
 }
+
+function getAthletes($name_hint, $dob_before, $dob_after){
+    require "connect.php";
+    $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date > :start AND birth_date < :end AND (name LIKE :name_hint OR surname LIKE :surname_hint)");
+    $stmt->execute([
+        "start" => $dob_after,
+        "end" => $dob_before,
+        "name_hint" => "%{$name_hint}%",
+        "surname_hint" => "%{$name_hint}%"
+    ]);
+    return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+}
+

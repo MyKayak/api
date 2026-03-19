@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
-        switch ($path[0]) {
+        switch (explode("?", $path[0])[0]) {
             case "meets":
                 // TODO : require auth
                 require "utils/queries.php";
@@ -40,6 +40,9 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 require "utils/queries.php";
                 echo getMedalTable($path[1]);
                 exit;
+            case "athletes":
+                require "utils/queries.php";
+                echo getAthletes("olu", "2077-01-01", "1970-01-01");
         }
         break;
     case "POST":
