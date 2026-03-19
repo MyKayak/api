@@ -42,7 +42,27 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 exit;
             case "athletes":
                 require "utils/queries.php";
-                echo getAthletes("olu", "2077-01-01", "1970-01-01");
+                $params = explode("&", explode("?", $path[0])[1]);
+                $name_hint = "";
+                $dob_before = "9999-12-31";
+                $dob_after = "0000-01-01";
+
+                foreach($params as $param) {
+                    $parts = explode("=", $param);
+                    switch($parts[0]) {
+                        case "name_hint":
+                            $name_hint = $parts[1];
+                            break;
+                        case "birth_before":
+                            $dob_before = $parts[1];
+                            break;
+                        case "birth_after":
+                            $dob_after = $parts[1];
+                            break;
+                    }
+                }
+
+                echo getAthletes($name_hint, $dob_before, $dob_after);
         }
         break;
     case "POST":

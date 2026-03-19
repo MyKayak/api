@@ -101,10 +101,10 @@ function getMedalTable($meet_id){
 
 function getAthletes($name_hint, $dob_before, $dob_after){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date > :start AND birth_date < :end AND (name LIKE :name_hint OR surname LIKE :surname_hint)");
+    $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date >= :dob_after AND birth_date <= :dob_before AND (name LIKE :name_hint OR surname LIKE :surname_hint)");
     $stmt->execute([
-        "start" => $dob_after,
-        "end" => $dob_before,
+        "dob_after" => $dob_after,
+        "dob_before" => $dob_before,
         "name_hint" => "%{$name_hint}%",
         "surname_hint" => "%{$name_hint}%"
     ]);
