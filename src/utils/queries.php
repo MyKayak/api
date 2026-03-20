@@ -145,3 +145,10 @@ function getAthlete($athlete_id){
 
     return $athlete;
 }
+
+function getTeams($hint){
+    require "connect.php";
+    $stmt = $conn->prepare("SELECT * FROM teams WHERE name LIKE :hint");
+    $stmt->execute(["hint" => "%" . $hint . "%"]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

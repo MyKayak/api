@@ -70,6 +70,21 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getAthlete($path[1]));
+
+            case "teams":
+                $params = explode("&", explode("?", $path[0])[1]);
+                $hint = "";
+
+                foreach($params as $param) {
+                    $parts = explode("=", $param);
+                    switch($parts[0]) {
+                        case "hint":
+                            $hint = $parts[1];
+                            break;
+                    }
+                }
+                require "utils/queries.php";
+                echo json_encode(getTeams($hint));
         }
         break;
     case "POST":
