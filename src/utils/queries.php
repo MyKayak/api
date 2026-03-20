@@ -152,3 +152,9 @@ function getTeams($hint){
     $stmt->execute(["hint" => "%" . $hint . "%"]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function getTeam($team_id){
+    require "connect.php";
+    $team = [];
+    // yada yada yada...
+}

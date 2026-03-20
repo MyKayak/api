@@ -17,10 +17,135 @@ components:
       in: cookie
       name: X-ADMIN-API-KEY
 
+  schemas:
+    Meet:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        date:
+          type: string
+          format: date
+
+    Race:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        distance:
+          type: integer
+        division:
+          type: string
+        category:
+          type: string
+        boat:
+          type: string
+        level:
+          type: string
+
+    Heat:
+      type: object
+      properties:
+        id:
+          type: integer
+        index:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        performances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Performance'
+
+    Performance:
+      type: object
+      properties:
+        id:
+          type: integer
+        team_id:
+          type: string
+        team_name:
+          type: string
+        lane:
+          type: integer
+        placement:
+          type: integer
+        time_ms:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        points:
+          type: integer
+        athletes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Athlete'
+
+    Athlete:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        surname:
+          type: string
+        birth_date:
+          type: string
+          format: date
+
+    Team:
+      type: object
+      properties:
+        team_id:
+          type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+
+    MedalTableEntry:
+      type: object
+      properties:
+        meet_id:
+          type: string
+        team_id:
+          type: string
+        team_name:
+          type: string
+        gold:
+          type: integer
+        silver:
+          type: integer
+        bronze:
+          type: integer
+        total_medals:
+          type: integer
+
+    PersonalRecord:
+      type: object
+      properties:
+        boat:
+          type: string
+        distance:
+          type: integer
+        time:
+          type: integer
+
 paths:
   /meets:
     get:
-      summary: Get meets
+      summary: Get all meets
       security:
         - standardAuth: []
       responses:
@@ -31,22 +156,19 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    name:
-                      type: string
-                    location:
-                      type: string
-                    date:
-                      type: string
-                      format: date
+                  $ref: '#/components/schemas/Meet'
+
   /races/{meet_id}:
     get:
-      summary: Get races
+      summary: Get races for a meet
       security:
-        - standardAuth: [ ]
+        - standardAuth: []
+      parameters:
+        - name: meet_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response
@@ -55,29 +177,21 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: number
-                    code:
-                      type: string
-                    distance:
-                      type: number
-                    division:
-                      type: string
-                    category:
-                      type: string
-                    boat:
-                      type: string
-                    level:
-                      type: string
+                  $ref: '#/components/schemas/Race'
         "400":
-          description: A meet id was not provided
-  /heats/{meet_id}/{race_id}:
+          description: Meet ID not provided
+
+  /heats/{race_id}:
     get:
-      summary: Get heats
+      summary: Get heats for a race
       security:
-        - standardAuth: [ ]
+        - standardAuth: []
+      parameters:
+        - name: race_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response
@@ -86,22 +200,21 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: number
-                    index:
-                      type: number
-                    start_time:
-                      type: string
-                      format: date_time
+                  $ref: '#/components/schemas/Heat'
         "400":
-          description: A meet and/or race id was not provided
-  /performances/{heat_id}:
+          description: Race ID not provided
+
+  /medal_table/{meet_id}:
     get:
-      summary: Get performances
+      summary: Get medal table for a meet
       security:
-        - standardAuth: [ ]
+        - standardAuth: []
+      parameters:
+        - name: meet_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response
@@ -110,28 +223,122 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    team_id:
-                      type: string
-                    lane:
-                      type: number
-                    placement:
-                      type: number
-                    time_ms:
-                      type: number
-                    status:
-                      type: string
-                    points:
-                      type: number
+                  $ref: '#/components/schemas/MedalTableEntry'
         "400":
-          description: A heat id was not provided
+          description: Meet ID not provided
+
+  /athletes:
+    get:
+      summary: Search athletes with filters
+      parameters:
+        - name: name_hint
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by name or surname (partial match)
+        - name: birth_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter athletes born before this date
+        - name: birth_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter athletes born after this date
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Athlete'
+
+  /athlete/{athlete_id}:
+    get:
+      summary: Get athlete details including current team and personal records
+      parameters:
+        - name: athlete_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  birth_date:
+                    type: string
+                    format: date
+                  team:
+                    $ref: '#/components/schemas/Team'
+                  personal_records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonalRecord'
+        "400":
+          description: Athlete ID not provided
+
+  /teams:
+    get:
+      summary: Search teams by name
+      parameters:
+        - name: hint
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by team name (partial match)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+
+  /team/{team_id}:
+    get:
+      summary: Get team details
+      parameters:
+        - name: team_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        "400":
+          description: Team ID not provided
+
   /create_key:
     post:
-      summary: Create a new api key
-      description: Requires an admin api key, returns the generated api key once it has been inserted with the given description.
+      summary: Create a new API key
+      description: Requires an admin API key. Returns the generated API key once inserted with the given description.
       security:
         - adminAuth: []
       requestBody:

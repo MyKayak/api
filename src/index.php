@@ -70,7 +70,6 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getAthlete($path[1]));
-
             case "teams":
                 $params = explode("&", explode("?", $path[0])[1]);
                 $hint = "";
@@ -85,6 +84,13 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getTeams($hint));
+            case "team":
+                if(empty($path[1])) {
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                require "utils/queries.php";
+                echo json_encode(getTeam($path[1]));
         }
         break;
     case "POST":
