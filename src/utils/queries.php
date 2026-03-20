@@ -11,7 +11,7 @@ function getMeets(){
             "date" => $meet["date"],
         ];
     }
-    return json_encode($meets);
+    return $meets;
 }
 
 function getRaces($meet_id){
@@ -32,7 +32,7 @@ function getRaces($meet_id){
             "level" => $race["level"],
         ];
     }
-    return json_encode($races);
+    return $races;
 }
 
 function getHeats($race_id){
@@ -96,7 +96,7 @@ function getMedalTable($meet_id){
     $stmt = $conn->prepare("SELECT * FROM medal_table_view WHERE meet_id = :meet_id ORDER BY gold DESC, silver DESC, bronze DESC");
     $stmt->bindParam(":meet_id", $meet_id);
     $stmt->execute();
-    return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function getAthletes($name_hint, $dob_before, $dob_after){
@@ -108,6 +108,40 @@ function getAthletes($name_hint, $dob_before, $dob_after){
         "name_hint" => "%{$name_hint}%",
         "surname_hint" => "%{$name_hint}%"
     ]);
-    return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getPersonalRecords($athlete_id){
+    require "connect.php";
+    $stmt = $conn->prepare("SELECT boat, distance, time FROM personal_records_view WHERE athlete_id = :athlete_id");
+    $stmt->execute(["athlete_id" => $athlete_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getAthlete($athlete_id){
+    $athlete = [];
+    require "connect.php";
+
+    $stmt = $conn->prepare("SELECT * FROM athletes WHERE athlete_id = :athlete_id");
+    $stmt->execute(["athlete_id" => $athlete_id]);
+    $athlete_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $athlete["id"] = $athlete_id;
+    $athlete["name"] = $athlete_data["name"];
+    $athlete["surname"] = $athlete_data["surname"];
+    $athlete["birth_date"] = $athlete_data["birth_date"];
+
+    $stmt = $conn->prepare("CALL get_athlete_current_team(:athlete_id)");
+    $stmt->execute(["athlete_id" => $athlete_id]);
+    $team = $stmt->fetch(PDO::FETCH_ASSOC);
+    $athlete["team"] = [
+        "id" => $team["team_id"],
+        "name" => $team["team_name"],
+        "logo" => $team["logo"],
+    ];
+
+    $athlete["personal_records"] = getPersonalRecords($athlete_id);
+
+    // TODO : add progession over time
+
+    return $athlete;
+}

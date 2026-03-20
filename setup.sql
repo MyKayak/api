@@ -159,3 +159,28 @@ WHERE races.level IN ("SR", "DF", "FA")
   AND status IS NULL
 GROUP BY meets.meet_id, team_id, teams.name;
 
+CREATE OR REPLACE VIEW personal_records_view AS (
+    SELECT athlete_id, boat, distance, MIN(time_ms) AS time FROM athletes
+    INNER JOIN performances_athletes USING (athlete_id)
+    INNER JOIN performances USING (performance_id)
+    INNER JOIN heats USING (heat_id)
+    INNER JOIN races USING (race_id)
+    GROUP BY boat, distance, athlete_id
+);
+
+DELIMITER //
+CREATE OR REPLACE PROCEDURE get_athlete_current_team(IN p_athlete_id INT)
+BEGIN
+    SELECT teams.team_id, teams.name AS team_name, teams.logo
+    FROM performances_athletes
+    JOIN performances USING (performance_id)
+    JOIN heats USING (heat_id)
+    JOIN races USING (race_id)
+    JOIN meets USING (meet_id)
+    JOIN teams USING (team_id)
+    WHERE performances_athletes.athlete_id = p_athlete_id
+    ORDER BY meets.date DESC, races.race_id DESC
+    LIMIT 1;
+END //
+
+DELIMITER ;

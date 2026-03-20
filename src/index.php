@@ -10,7 +10,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             case "meets":
                 // TODO : require auth
                 require "utils/queries.php";
-                echo getMeets();
+                echo json_encode(getMeets());
                 exit;
             case "races":
                 if(empty($path[1])) {
@@ -19,7 +19,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo getRaces($path[1]);
+                echo json_encode(getRaces($path[1]));
                 exit;
             case "heats":
                 if(empty($path[1])){
@@ -38,7 +38,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo getMedalTable($path[1]);
+                echo json_encode(getMedalTable($path[1]));
                 exit;
             case "athletes":
                 require "utils/queries.php";
@@ -62,7 +62,14 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                     }
                 }
 
-                echo getAthletes($name_hint, $dob_before, $dob_after);
+                echo json_encode(getAthletes($name_hint, $dob_before, $dob_after));
+            case "athlete":
+                if(empty($path[1])) {
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                require "utils/queries.php";
+                echo json_encode(getAthlete($path[1]));
         }
         break;
     case "POST":
