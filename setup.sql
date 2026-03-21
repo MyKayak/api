@@ -46,6 +46,8 @@ CREATE TABLE meets (
     is_championship BOOLEAN DEFAULT FALSE
 );
 
+-- UPDATE meets SET is_championship = TRUE WHERE name LIKE '%campionat%' AND (name LIKE '%italian%' OR name LIKE '%nazional%');
+
 CREATE TABLE races (
     race_id INT AUTO_INCREMENT PRIMARY KEY,
     race_code VARCHAR(255) NOT NULL,
@@ -184,3 +186,16 @@ BEGIN
 END //
 
 DELIMITER ;
+
+CREATE OR REPLACE VIEW titles_view AS
+SELECT athlete_id, performance_id, team_id, time_ms, athletes.name, surname, start_time, distance, division, category, boat, location FROM performances
+INNER JOIN performances_athletes USING (performance_id)
+INNER JOIN athletes USING (athlete_id)
+INNER JOIN heats USING (heat_id)
+INNER JOIN races USING (race_id)
+INNER JOIN meets USING (meet_id)
+WHERE is_championship = true
+AND time_ms > 0
+AND placement = 1
+AND (level = 'DF' OR level = 'FA')
+ORDER BY start_time DESC;

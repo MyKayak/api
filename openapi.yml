@@ -114,6 +114,27 @@ components:
           type: string
           nullable: true
 
+    TeamTitle:
+      type: object
+      properties:
+        time_ms:
+          type: integer
+          description: Winning time in milliseconds
+        start_time:
+          type: string
+          format: date-time
+          description: Date/time of the race
+        distance:
+          type: integer
+        category:
+          type: string
+        division:
+          type: string
+        boat:
+          type: string
+        location:
+          type: string
+
     MedalTableEntry:
       type: object
       properties:
@@ -305,6 +326,7 @@ paths:
           required: false
           schema:
             type: string
+            default: ""
           description: Filter by team name (partial match)
       responses:
         "200":
@@ -318,7 +340,7 @@ paths:
 
   /team/{team_id}:
     get:
-      summary: Get team details
+      summary: Get team details including titles
       parameters:
         - name: team_id
           in: path
@@ -331,7 +353,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                type: object
+                properties:
+                  team_id:
+                    type: string
+                  name:
+                    type: string
+                  logo:
+                    type: string
+                    nullable: true
+                  titles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamTitle'
         "400":
           description: Team ID not provided
 

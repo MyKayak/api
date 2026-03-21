@@ -155,6 +155,23 @@ function getTeams($hint){
 
 function getTeam($team_id){
     require "connect.php";
-    $team = [];
-    // yada yada yada...
+    $stmt = $conn->prepare("SELECT * FROM teams WHERE team_id = :id");
+    $stmt->execute(["id" => $team_id]);
+    $team = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $conn->prepare("SELECT * FROM titles_view WHERE team_id = :id GROUP BY performance_id");
+    $stmt->execute(["id" => $team_id]);
+    $team_titles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach($team_titles as $title){
+        $team["titles"][] = [
+            "time" => $title["time_ms"],
+            "date" => $title["start_time"],
+            "distance" => $title["distance"],
+            "category" => $title["category"],
+            "division" => $title["division"],
+            "boat" => $title["boat"],
+            "location" => $title["location"]
+        ];
+    }
+
+    return $team;
 }
