@@ -145,6 +145,8 @@ CREATE TABLE admin_api_keys (
 CREATE OR REPLACE VIEW medal_table_view AS
 SELECT 
     meets.meet_id,
+    meets.date,
+    meets.is_championship,
     team_id, 
     teams.name AS team_name,
     SUM(CASE WHEN placement = 1 THEN 1 ELSE 0 END) AS gold,

@@ -32,13 +32,32 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo json_encode($heats);
                 exit;
             case "medal_table":
-                if(empty($path[1])) {
-                    header("HTTP/1.1 400 Bad request");
-                    exit;
+                $params = explode("&", explode("?", $path[0])[1]);
+                $meet_id = "";
+                $after = "0000-01-01";
+                $before = "9999-12-31";
+                $championships = false;
+
+                foreach($params as $param) {
+                    $parts = explode("=", $param);
+                    switch($parts[0]) {
+                        case "meet_id":
+                            $meet_id = $parts[1];
+                            break;
+                        case "before":
+                            $before = $parts[1];
+                            break;
+                        case "after":
+                            $after = $parts[1];
+                            break;
+                        case "only_championships":
+                            $championships = $parts[1] == true;
+                            break;
+                    }
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo json_encode(getMedalTable($path[1]));
+                echo json_encode(getMedalTable($meet_id, $before, $after));
                 exit;
             case "athletes":
                 require "utils/queries.php";

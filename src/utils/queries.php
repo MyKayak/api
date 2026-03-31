@@ -90,12 +90,19 @@ function getPerformanceAthletes($performance_id){
     return $athletes;
 }
 
-function getMedalTable($meet_id){
+function getMedalTable($meet_id, $before, $after, $championships){
     require "connect.php";
     $meet_id = str_replace("%20"," ", $meet_id);
-    $stmt = $conn->prepare("SELECT * FROM medal_table_view WHERE meet_id = :meet_id ORDER BY gold DESC, silver DESC, bronze DESC");
-    $stmt->bindParam(":meet_id", $meet_id);
-    $stmt->execute();
+    $query = "SELECT * FROM medal_table_view WHERE meet_id LIKE :meet_id" . ($after ? " AND date > :after" : "") . ($before ? " AND date < :before" : "") . ($championships ? " AND is_championship = true" : "") . " ORDER BY gold DESC, silver DESC, bronze DESC";
+    $stmt = $conn->prepare($query);
+    $params = [":meet_id" => "%$meet_id%"];
+    if($after){
+        $params[":after"] = $after;
+    } . ($before ? " AND date < :before" : "")
+    if($before){
+        $params[":before"] = $before;
+    }
+    $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -157,7 +164,7 @@ function getTeam($team_id){
     require "connect.php";
     $stmt = $conn->prepare("SELECT * FROM teams WHERE team_id = :id");
     $stmt->execute(["id" => $team_id]);
-    $team = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $team = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
     $stmt = $conn->prepare("SELECT * FROM titles_view WHERE team_id = :id GROUP BY performance_id");
     $stmt->execute(["id" => $team_id]);
     $team_titles = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -225,17 +225,40 @@ paths:
         "400":
           description: Race ID not provided
 
-  /medal_table/{meet_id}:
+  /medal_table:
     get:
-      summary: Get medal table for a meet
+      summary: Get medal table with optional filters
+      description: Returns medal standings. Can filter by meet, date range, or championships only. Leave all params empty for all-time standings.
       security:
         - standardAuth: []
       parameters:
         - name: meet_id
-          in: path
-          required: true
+          in: query
+          required: false
           schema:
             type: string
+          description: Filter by meet ID (partial match)
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter medals from this date onwards (exclusive)
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter medals up to this date (exclusive)
+        - name: only_championships
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Only include championship events
       responses:
         "200":
           description: Successful response
@@ -245,8 +268,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MedalTableEntry'
-        "400":
-          description: Meet ID not provided
 
   /athletes:
     get:
