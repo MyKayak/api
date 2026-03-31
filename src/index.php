@@ -32,32 +32,33 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo json_encode($heats);
                 exit;
             case "medal_table":
-                $params = explode("&", explode("?", $path[0])[1]);
+                $params = explode("&", explode("?", $path[0])[1] ?? "");
                 $meet_id = "";
-                $after = "0000-01-01";
-                $before = "9999-12-31";
+                $after = "";
+                $before = "";
                 $championships = false;
 
                 foreach($params as $param) {
+                    if(empty($param)) continue;
                     $parts = explode("=", $param);
                     switch($parts[0]) {
                         case "meet_id":
-                            $meet_id = $parts[1];
+                            $meet_id = $parts[1] ?? "";
                             break;
                         case "before":
-                            $before = $parts[1];
+                            $before = $parts[1] ?? "";
                             break;
                         case "after":
-                            $after = $parts[1];
+                            $after = $parts[1] ?? "";
                             break;
                         case "only_championships":
-                            $championships = $parts[1] == true;
+                            $championships = isset($parts[1]) && $parts[1] === "true";
                             break;
                     }
                 }
                 // TODO : require auth
                 require "utils/queries.php";
-                echo json_encode(getMedalTable($meet_id, $before, $after));
+                echo json_encode(getMedalTable($meet_id, $after, $before, $championships));
                 exit;
             case "athletes":
                 require "utils/queries.php";

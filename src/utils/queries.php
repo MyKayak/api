@@ -90,18 +90,48 @@ function getPerformanceAthletes($performance_id){
     return $athletes;
 }
 
-function getMedalTable($meet_id, $before, $after, $championships){
+function getMedalTable($meet_id, $after, $before, $championships){
     require "connect.php";
     $meet_id = str_replace("%20"," ", $meet_id);
-    $query = "SELECT * FROM medal_table_view WHERE meet_id LIKE :meet_id" . ($after ? " AND date > :after" : "") . ($before ? " AND date < :before" : "") . ($championships ? " AND is_championship = true" : "") . " ORDER BY gold DESC, silver DESC, bronze DESC";
-    $stmt = $conn->prepare($query);
-    $params = [":meet_id" => "%$meet_id%"];
-    if($after){
+    $conditions = [];
+    $params = [];
+    
+    if(!empty($meet_id)){
+        $conditions[] = "meet_id LIKE :meet_id";
+        $params[":meet_id"] = "%$meet_id%";
+    }
+    if(!empty($after)){
+        $conditions[] = "date > :after";
         $params[":after"] = $after;
     }
-    if($before){
+    if(!empty($before)){
+        $conditions[] = "date < :before";
         $params[":before"] = $before;
     }
+    if($championships){
+        $conditions[] = "is_championship = true";
+    }
+    
+    $where = empty($conditions) ? "" : "WHERE " . implode(" AND ", $conditions);
+    
+    // If filtering by meet_id only, return per-meet standings
+    // Otherwise aggregate across all matching meets by team
+    if(!empty($meet_id) && empty($after) && empty($before) && !$championships){
+        $query = "SELECT meet_id, team_id, team_name, gold, silver, bronze, total_medals FROM medal_table_view $where ORDER BY gold DESC, silver DESC, bronze DESC";
+    } else {
+        $query = "SELECT 
+            team_id, 
+            team_name, 
+            SUM(gold) AS gold, 
+            SUM(silver) AS silver, 
+            SUM(bronze) AS bronze, 
+            SUM(total_medals) AS total_medals 
+            FROM medal_table_view $where 
+            GROUP BY team_id, team_name 
+            ORDER BY gold DESC, silver DESC, bronze DESC";
+    }
+    
+    $stmt = $conn->prepare($query);
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }

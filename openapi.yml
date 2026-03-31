@@ -140,6 +140,7 @@ components:
       properties:
         meet_id:
           type: string
+          description: Only present when querying a specific meet
         team_id:
           type: string
         team_name:
@@ -241,7 +242,7 @@ paths:
   /medal_table:
     get:
       summary: Get medal table with optional filters
-      description: Returns medal standings. Can filter by meet, date range, or championships only. Leave all params empty for all-time standings.
+      description: Returns medal standings. Use filters to get standings for a specific meet, season, date range, or all-time. Leave all params empty for all-time standings across all races.
       security:
         - standardAuth: []
       parameters:
@@ -250,28 +251,28 @@ paths:
           required: false
           schema:
             type: string
-          description: Filter by meet ID (partial match)
+          description: Filter by meet ID (partial match). Use this to get standings for a specific meet.
         - name: after
           in: query
           required: false
           schema:
             type: string
             format: date
-          description: Filter medals from this date onwards (exclusive)
+          description: Filter medals from this date onwards (exclusive). Use with `before` for a season or date range.
         - name: before
           in: query
           required: false
           schema:
             type: string
             format: date
-          description: Filter medals up to this date (exclusive)
+          description: Filter medals up to this date (exclusive). Use with `after` for a season or date range.
         - name: only_championships
           in: query
           required: false
           schema:
             type: boolean
             default: false
-          description: Only include championship events
+          description: Only include championship events. Can be combined with other filters.
       responses:
         "200":
           description: Successful response
