@@ -98,7 +98,7 @@ function getMedalTable($meet_id, $before, $after, $championships){
     $params = [":meet_id" => "%$meet_id%"];
     if($after){
         $params[":after"] = $after;
-    } . ($before ? " AND date < :before" : "")
+    }
     if($before){
         $params[":before"] = $before;
     }
@@ -125,6 +125,27 @@ function getPersonalRecords($athlete_id){
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getAthleteTimeProgression($athlete_id){
+    require "connect.php";
+    $stmt = $conn->prepare("SELECT distance, boat, division, time_ms, date FROM athlete_time_progression_view WHERE athlete_id = :athlete_id");
+    $stmt->execute(["athlete_id" => $athlete_id]);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $progression = [];
+    foreach($results as $row){
+        $key = $row["distance"] . "_" . $row["boat"] . "_" . $row["division"];
+        if(!isset($progression[$key])){
+            $progression[$key] = [];
+        }
+        $progression[$key][] = [
+            "time_ms" => (int)$row["time_ms"],
+            "date" => $row["date"]
+        ];
+    }
+    
+    return $progression;
+}
+
 function getAthlete($athlete_id){
     $athlete = [];
     require "connect.php";
@@ -147,8 +168,7 @@ function getAthlete($athlete_id){
     ];
 
     $athlete["personal_records"] = getPersonalRecords($athlete_id);
-
-    // TODO : add progession over time
+    $athlete["time_progression"] = getAthleteTimeProgression($athlete_id);
 
     return $athlete;
 }

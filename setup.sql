@@ -172,6 +172,22 @@ CREATE OR REPLACE VIEW personal_records_view AS (
     GROUP BY boat, distance, athlete_id
 );
 
+CREATE OR REPLACE VIEW athlete_time_progression_view AS
+SELECT 
+    performances_athletes.athlete_id,
+    races.distance,
+    races.boat,
+    races.division,
+    performances.time_ms,
+    meets.date
+FROM performances_athletes
+INNER JOIN performances USING (performance_id)
+INNER JOIN heats USING (heat_id)
+INNER JOIN races USING (race_id)
+INNER JOIN meets USING (meet_id)
+WHERE performances.time_ms IS NOT NULL
+ORDER BY performances_athletes.athlete_id, races.distance, races.boat, races.division, meets.date;
+
 DELIMITER //
 CREATE OR REPLACE PROCEDURE get_athlete_current_team(IN p_athlete_id INT)
 BEGIN
