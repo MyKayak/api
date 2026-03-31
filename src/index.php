@@ -60,6 +60,35 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 require "utils/queries.php";
                 echo json_encode(getMedalTable($meet_id, $after, $before, $championships));
                 exit;
+            case "rankings":
+                $params = explode("&", explode("?", $path[0])[1] ?? "");
+                $category = "";
+                $division = "";
+                $distance = "";
+                $after = "";
+
+                foreach($params as $param) {
+                    if(empty($param)) continue;
+                    $parts = explode("=", $param);
+                    switch($parts[0]) {
+                        case "category":
+                            $category = $parts[1] ?? "";
+                            break;
+                        case "division":
+                            $division = $parts[1] ?? "";
+                            break;
+                        case "distance":
+                            $distance = $parts[1] ?? "";
+                            break;
+                        case "after":
+                            $after = $parts[1] ?? "";
+                            break;
+                    }
+                }
+                // TODO : require auth
+                require "utils/queries.php";
+                echo json_encode(getAthleteRankings($category, $division, $distance, $after));
+                exit;
             case "athletes":
                 require "utils/queries.php";
                 $params = explode("&", explode("?", $path[0])[1]);

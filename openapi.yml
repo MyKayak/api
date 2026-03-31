@@ -154,6 +154,32 @@ components:
         total_medals:
           type: integer
 
+    AthleteRanking:
+      type: object
+      properties:
+        athlete_id:
+          type: integer
+        name:
+          type: string
+        surname:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        distance:
+          type: integer
+        category:
+          type: string
+          description: Gender category (M/F)
+        division:
+          type: string
+        best_time:
+          type: integer
+          description: Best time in milliseconds
+        avg_best_3:
+          type: number
+          description: Average of best 3 times in the filtered period (milliseconds)
+
     PersonalRecord:
       type: object
       properties:
@@ -282,6 +308,49 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MedalTableEntry'
+
+  /rankings:
+    get:
+      summary: Get athlete rankings for single-boat events (K1/C1)
+      description: Returns athlete rankings ordered by average of best 3 times. Filters by category (gender), division, distance, and date range. Use `after` to get rankings for the last year (e.g., `after=2025-01-01`). Leave all params empty for all-time rankings across all events.
+      security:
+        - standardAuth: []
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [M, F]
+          description: Filter by gender category (M=male, F=female)
+        - name: division
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by division (e.g., SEN, JUN, U23)
+        - name: distance
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filter by race distance in meters (e.g., 200, 500, 1000)
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter races from this date onwards. Use for seasonal rankings (e.g., last year).
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AthleteRanking'
 
   /athletes:
     get:

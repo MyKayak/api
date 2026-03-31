@@ -143,11 +143,11 @@ CREATE TABLE admin_api_keys (
 );
 
 CREATE OR REPLACE VIEW medal_table_view AS
-SELECT 
+SELECT
     meets.meet_id,
     meets.date,
     meets.is_championship,
-    team_id, 
+    team_id,
     teams.name AS team_name,
     SUM(CASE WHEN placement = 1 THEN 1 ELSE 0 END) AS gold,
     SUM(CASE WHEN placement = 2 THEN 1 ELSE 0 END) AS silver,
@@ -163,9 +163,75 @@ WHERE races.level IN ("SR", "DF", "FA")
   AND status IS NULL
 GROUP BY meets.meet_id, team_id, teams.name;
 
+CREATE OR REPLACE VIEW athlete_rankings_view AS
+SELECT
+    athletes.athlete_id,
+    athletes.name,
+    athletes.surname,
+    athletes.birth_date,
+    races.distance,
+    races.category,
+    races.division,
+    performances.time_ms,
+    meets.date
+FROM athletes
+INNER JOIN performances_athletes USING (athlete_id)
+INNER JOIN performances USING (performance_id)
+INNER JOIN heats USING (heat_id)
+INNER JOIN races USING (race_id)
+INNER JOIN meets USING (meet_id)
+WHERE races.boat IN ('K1', 'C1')
+  AND performances.time_ms IS NOT NULL
+  AND performances.status IS NULL
+  AND performances.time_ms >= 25000
+ORDER BY athletes.athlete_id, races.distance, races.category, races.division, meets.date DESC;
+
 CREATE OR REPLACE VIEW personal_records_view AS (
     SELECT athlete_id, boat, distance, category, MIN(time_ms) AS time FROM athletes
-    INNER JOIN performances_athletes USING (athlete_id)
+    INNER JOIN performance
+CREATE OR REPLACE VIEW medal_table_view AS
+SELECT
+    meets.meet_id,
+    meets.date,
+    meets.is_championship,
+    team_id,
+    teams.name AS team_name,
+    SUM(CASE WHEN placement = 1 THEN 1 ELSE 0 END) AS gold,
+    SUM(CASE WHEN placement = 2 THEN 1 ELSE 0 END) AS silver,
+    SUM(CASE WHEN placement = 3 THEN 1 ELSE 0 END) AS bronze,
+    COUNT(*) AS total_medals
+FROM meets
+JOIN races ON meets.meet_id = races.meet_id
+JOIN heats ON races.race_id = heats.race_id
+JOIN performances USING (heat_id)
+JOIN teams USING (team_id)
+WHERE races.level IN ("SR", "DF", "FA")
+  AND placement BETWEEN 1 AND 3
+  AND status IS NULL
+GROUP BY meets.meet_id, team_id, teams.name;
+
+CREATE OR REPLACE VIEW athlete_rankings_view AS
+SELECT
+    athletes.athlete_id,
+    athletes.name,
+    athletes.surname,
+    athletes.birth_date,
+    races.distance,
+    races.category,
+    races.division,
+    performances.time_ms,
+    meets.date
+FROM athletes
+INNER JOIN performances_athletes USING (athlete_id)
+INNER JOIN performances USING (performance_id)
+INNER JOIN heats USING (heat_id)
+INNER JOIN races USING (race_id)
+INNER JOIN meets USING (meet_id)
+WHERE races.boat IN ('K1', 'C1')
+  AND performances.time_ms IS NOT NULL
+  AND performances.status IS NULL
+ORDER BY athletes.athlete_id, races.distance, races.category, races.division, meets.date DESC;
+s_athletes USING (athlete_id)
     INNER JOIN performances USING (performance_id)
     INNER JOIN heats USING (heat_id)
     INNER JOIN races USING (race_id)

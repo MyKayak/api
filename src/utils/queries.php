@@ -136,6 +136,92 @@ function getMedalTable($meet_id, $after, $before, $championships){
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getAthleteRankings($category, $division, $distance, $after){
+    require "connect.php";
+    $conditions = [];
+    $params = [];
+    
+    if(!empty($category)){
+        $conditions[] = "category = :category";
+        $params[":category"] = $category;
+    }
+    if(!empty($division)){
+        $conditions[] = "division = :division";
+        $params[":division"] = $division;
+    }
+    if(!empty($distance)){
+        $conditions[] = "distance = :distance";
+        $params[":distance"] = $distance;
+    }
+    if(!empty($after)){
+        $conditions[] = "date >= :after";
+        $params[":after"] = $after;
+    }
+    
+    $where = empty($conditions) ? "" : "WHERE " . implode(" AND ", $conditions);
+
+    $query = "SELECT 
+        athlete_id,
+        name,
+        surname,
+        birth_date,
+        distance,
+        category,
+        division,
+        time_ms
+        FROM athlete_rankings_view ar
+        $where
+        ORDER BY athlete_id, distance, category, division, time_ms ASC";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $athletes = [];
+    foreach($results as $row){
+        $key = $row["athlete_id"] . "_" . $row["distance"] . "_" . $row["category"] . "_" . $row["division"];
+        if(!isset($athletes[$key])){
+            $athletes[$key] = [
+                "athlete_id" => $row["athlete_id"],
+                "name" => $row["name"],
+                "surname" => $row["surname"],
+                "birth_date" => $row["birth_date"],
+                "distance" => $row["distance"],
+                "category" => $row["category"],
+                "division" => $row["division"],
+                "best_time" => $row["time_ms"],
+                "times" => []
+            ];
+        }
+        $athletes[$key]["times"][] = $row["time_ms"];
+    }
+
+    $rankings = [];
+    foreach($athletes as $athlete){
+        if(count($athlete["times"]) >= 3){
+            $best3 = array_slice($athlete["times"], 0, 3);
+            $avg = array_sum($best3) / count($best3);
+            $rankings[] = [
+                "athlete_id" => $athlete["athlete_id"],
+                "name" => $athlete["name"],
+                "surname" => $athlete["surname"],
+                "birth_date" => $athlete["birth_date"],
+                "distance" => $athlete["distance"],
+                "category" => $athlete["category"],
+                "division" => $athlete["division"],
+                "best_time" => $athlete["best_time"],
+                "avg_best_3" => $avg
+            ];
+        }
+    }
+
+    usort($rankings, function($a, $b){
+        return $a["avg_best_3"] <=> $b["avg_best_3"];
+    });
+    
+    return $rankings;
+}
+
 function getAthletes($name_hint, $dob_before, $dob_after){
     require "connect.php";
     $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date >= :dob_after AND birth_date <= :dob_before AND (name LIKE :name_hint OR surname LIKE :surname_hint)");
