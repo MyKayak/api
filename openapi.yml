@@ -160,6 +160,8 @@ components:
           type: string
         distance:
           type: integer
+        category:
+          type: string
         time:
           type: integer
 
@@ -348,7 +350,7 @@ paths:
                       $ref: '#/components/schemas/PersonalRecord'
                   time_progression:
                     type: object
-                    description: Map of distance_boat_division keys (e.g., 200_K2_M) to arrays of time entries ordered by date
+                    description: Map of distance_boat_category keys (e.g., 200_K2_M) to arrays of time entries ordered by date
                     additionalProperties:
                       type: array
                       items:

@@ -120,20 +120,20 @@ function getAthletes($name_hint, $dob_before, $dob_after){
 
 function getPersonalRecords($athlete_id){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT boat, distance, time FROM personal_records_view WHERE athlete_id = :athlete_id");
+    $stmt = $conn->prepare("SELECT boat, distance, time, category FROM personal_records_view WHERE athlete_id = :athlete_id");
     $stmt->execute(["athlete_id" => $athlete_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function getAthleteTimeProgression($athlete_id){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT distance, boat, division, time_ms, date FROM athlete_time_progression_view WHERE athlete_id = :athlete_id");
+    $stmt = $conn->prepare("SELECT distance, boat, category, time_ms, date FROM athlete_time_progression_view WHERE athlete_id = :athlete_id");
     $stmt->execute(["athlete_id" => $athlete_id]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     $progression = [];
     foreach($results as $row){
-        $key = $row["distance"] . "_" . $row["boat"] . "_" . $row["division"];
+        $key = $row["distance"] . "_" . $row["boat"] . "_" . $row["category"];
         if(!isset($progression[$key])){
             $progression[$key] = [];
         }
@@ -142,7 +142,7 @@ function getAthleteTimeProgression($athlete_id){
             "date" => $row["date"]
         ];
     }
-    
+
     return $progression;
 }
 

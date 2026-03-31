@@ -164,12 +164,12 @@ WHERE races.level IN ("SR", "DF", "FA")
 GROUP BY meets.meet_id, team_id, teams.name;
 
 CREATE OR REPLACE VIEW personal_records_view AS (
-    SELECT athlete_id, boat, distance, MIN(time_ms) AS time FROM athletes
+    SELECT athlete_id, boat, distance, category, MIN(time_ms) AS time FROM athletes
     INNER JOIN performances_athletes USING (athlete_id)
     INNER JOIN performances USING (performance_id)
     INNER JOIN heats USING (heat_id)
     INNER JOIN races USING (race_id)
-    GROUP BY boat, distance, athlete_id
+    GROUP BY boat, distance, category, athlete_id
 );
 
 CREATE OR REPLACE VIEW athlete_time_progression_view AS
@@ -177,7 +177,7 @@ SELECT
     performances_athletes.athlete_id,
     races.distance,
     races.boat,
-    races.division,
+    races.category,
     performances.time_ms,
     meets.date
 FROM performances_athletes
@@ -186,7 +186,7 @@ INNER JOIN heats USING (heat_id)
 INNER JOIN races USING (race_id)
 INNER JOIN meets USING (meet_id)
 WHERE performances.time_ms IS NOT NULL
-ORDER BY performances_athletes.athlete_id, races.distance, races.boat, races.division, meets.date;
+ORDER BY performances_athletes.athlete_id, races.distance, races.boat, races.category, meets.date;
 
 DELIMITER //
 CREATE OR REPLACE PROCEDURE get_athlete_current_team(IN p_athlete_id INT)
