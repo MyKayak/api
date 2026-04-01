@@ -28,7 +28,9 @@ CREATE TABLE athletes (
     name VARCHAR(255) NOT NULL,
     surname VARCHAR(255) NOT NULL,
     birth_date DATE,
-    UNIQUE KEY uq_athlete (name, surname, birth_date)
+    UNIQUE KEY uq_athlete (name, surname, birth_date),
+    INDEX idx_athletes_birth_date (birth_date),
+    INDEX idx_athletes_name (name, surname)
 );
 
 CREATE TABLE users (
@@ -43,7 +45,9 @@ CREATE TABLE meets (
     name VARCHAR(255) NOT NULL,
     location VARCHAR(255),
     date DATE,
-    is_championship BOOLEAN DEFAULT FALSE
+    is_championship BOOLEAN DEFAULT FALSE,
+    INDEX idx_meets_date (date),
+    INDEX idx_meets_championship (is_championship)
 );
 
 -- UPDATE meets SET is_championship = TRUE WHERE name LIKE '%campionat%' AND (name LIKE '%italian%' OR name LIKE '%nazional%');
@@ -58,7 +62,8 @@ CREATE TABLE races (
     boat CHAR(2) NOT NULL,
     level CHAR(2) NOT NULL,
     FOREIGN KEY (meet_id) REFERENCES meets(meet_id) ON DELETE CASCADE,
-    UNIQUE KEY (race_code, meet_id)
+    UNIQUE KEY uq_races_code_meet (race_code, meet_id),
+    INDEX idx_races_meet_id (meet_id)
 );
 
 CREATE TABLE heats (
@@ -68,7 +73,8 @@ CREATE TABLE heats (
     start_time DATETIME,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
     PRIMARY KEY (heat_id),
-    UNIQUE KEY uq_heat (heat_index, race_id)
+    UNIQUE KEY uq_heat (heat_index, race_id),
+    INDEX idx_heats_race_id (race_id)
 );
 
 CREATE TABLE performances (
@@ -81,7 +87,9 @@ CREATE TABLE performances (
     status VARCHAR(3) NULL,
     points INT DEFAULT 0,
     FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
-    UNIQUE KEY (heat_id, placement),
+    UNIQUE KEY uq_performances_heat_placement (heat_id, placement),
+    INDEX idx_performances_heat_id (heat_id),
+    INDEX idx_performances_team_id (team_id),
     CONSTRAINT chk_time_or_status CHECK (
         (time_ms IS NULL AND status IS NOT NULL)
             OR

@@ -291,7 +291,14 @@ function getAthlete($athlete_id){
 
 function getTeams($hint){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT * FROM teams WHERE name LIKE :hint");
+    $stmt = $conn->prepare("
+        SELECT t.team_id, t.name, t.logo
+        FROM teams t
+        LEFT JOIN performances p ON t.team_id = p.team_id
+        WHERE t.name LIKE :hint
+        GROUP BY t.team_id, t.name, t.logo
+        ORDER BY COUNT(p.performance_id) DESC
+    ");
     $stmt->execute(["hint" => "%" . $hint . "%"]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
