@@ -2,7 +2,7 @@
 function createApiKey($description){
     require "connect.php";
     try {
-        $key = bin2hex(random_bytes(8));
+        $key = bin2hex(random_bytes(32));
     } catch (\Random\RandomException $e) {
         header("HTTP/1.0 500 Internal Server Error");
         exit;

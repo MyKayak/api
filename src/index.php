@@ -112,6 +112,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
 
                 echo json_encode(getAthletes($name_hint, $dob_before, $dob_after));
+                exit;
             case "athlete":
                 if(empty($path[1])) {
                     header("HTTP/1.1 400 Bad request");
@@ -119,6 +120,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getAthlete($path[1]));
+                exit;
             case "teams":
                 $params = explode("&", explode("?", $path[0])[1]);
                 $hint = "";
@@ -133,6 +135,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getTeams($hint));
+                exit;
             case "team":
                 if(empty($path[1])) {
                     header("HTTP/1.1 400 Bad request");
@@ -140,18 +143,61 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 require "utils/queries.php";
                 echo json_encode(getTeam($path[1]));
+                exit;
         }
         break;
     case "POST":
         switch ($path[0]) {
             case 'create_key':
                 require_once 'utils/auth.php';
-                if(!verifyAdminApiKey($_SERVER["HTTP_X_ADMIN_API_KEY"])){
+                $adminKey = $_SERVER["HTTP_X_ADMIN_API_KEY"] ?? "";
+                if (empty($adminKey) || !verifyAdminApiKey($adminKey)) {
                     header("HTTP/1.1 401 Unauthorized");
                     exit;
                 }
                 require_once 'utils/create_api_key.php';
                 echo json_encode(["key" => create_api_key($_POST["description"])]);
                 exit;
+            case 'register':
+                require_once 'utils/auth.php';
+                if (empty($_POST["username"]) || empty($_POST["email"]) || empty($_POST["password"])) {
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                try {
+                    $success = registerUser($_POST["username"], $_POST["email"], $_POST["password"]);
+                    if ($success) {
+                        header("HTTP/1.1 201 Created");
+                        echo json_encode(["success" => true]);
+                    } else {
+                        header("HTTP/1.1 409 Conflict");
+                        echo json_encode(["error" => "Email already in use"]);
+                    }
+                } catch (\PDOException $e) {
+                    if ($e->getCode() == 23000) {
+                        header("HTTP/1.1 409 Conflict");
+                        echo json_encode(["error" => "Username or email already in use"]);
+                    } else {
+                        header("HTTP/1.1 500 Internal Server Error");
+                        echo json_encode(["error" => "Internal Server Error"]);
+                    }
+                }
+                exit;
+            case 'login':
+                require_once 'utils/auth.php';
+                if (empty($_POST["email"]) || empty($_POST["password"])) {
+                    header("HTTP/1.1 400 Bad request");
+                    exit;
+                }
+                $token = verifyUserCredentials($_POST["email"], $_POST["password"]);
+                if ($token) {
+                    echo json_encode(["token" => $token]);
+                } else {
+                    header("HTTP/1.1 401 Unauthorized");
+                    echo json_encode(["error" => "Invalid credentials"]);
+                }
+                exit;
         }
 }
+
+header("HTTP/1.1 404 Not Found");
