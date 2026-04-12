@@ -1,12 +1,13 @@
 <?php
 
-$path = array_slice(explode('/', $_SERVER['REQUEST_URI']), 1);
+$request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$path = explode('/', trim($request_uri, '/'));
 
 header('Content-Type: application/json; charset=utf-8');
 
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
-        switch (explode("?", $path[0])[0]) {
+        switch ($path[0]) {
             case "meets":
                 // TODO : require auth
                 require "utils/queries.php";
@@ -32,84 +33,30 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo json_encode($heats);
                 exit;
             case "medal_table":
-                $params = explode("&", explode("?", $path[0])[1] ?? "");
-                $meet_id = "";
-                $after = "";
-                $before = "";
-                $championships = false;
+                $meet_id = $_GET["meet_id"] ?? "";
+                $before = $_GET["before"] ?? "";
+                $after = $_GET["after"] ?? "";
+                $championships = ($_GET["only_championships"] ?? "") === "true";
 
-                foreach($params as $param) {
-                    if(empty($param)) continue;
-                    $parts = explode("=", $param);
-                    switch($parts[0]) {
-                        case "meet_id":
-                            $meet_id = $parts[1] ?? "";
-                            break;
-                        case "before":
-                            $before = $parts[1] ?? "";
-                            break;
-                        case "after":
-                            $after = $parts[1] ?? "";
-                            break;
-                        case "only_championships":
-                            $championships = isset($parts[1]) && $parts[1] === "true";
-                            break;
-                    }
-                }
                 // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getMedalTable($meet_id, $after, $before, $championships));
                 exit;
             case "rankings":
-                $params = explode("&", explode("?", $path[0])[1] ?? "");
-                $category = "";
-                $division = "";
-                $distance = "";
-                $after = "";
-
-                foreach($params as $param) {
-                    if(empty($param)) continue;
-                    $parts = explode("=", $param);
-                    switch($parts[0]) {
-                        case "category":
-                            $category = $parts[1] ?? "";
-                            break;
-                        case "division":
-                            $division = $parts[1] ?? "";
-                            break;
-                        case "distance":
-                            $distance = $parts[1] ?? "";
-                            break;
-                        case "after":
-                            $after = $parts[1] ?? "";
-                            break;
-                    }
-                }
+                $category = $_GET["category"] ?? "";
+                $division = $_GET["division"] ?? "";
+                $distance = $_GET["distance"] ?? "";
+                $after = $_GET["after"] ?? "";
+                
                 // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getAthleteRankings($category, $division, $distance, $after));
                 exit;
             case "athletes":
                 require "utils/queries.php";
-                $params = explode("&", explode("?", $path[0])[1]);
-                $name_hint = "";
-                $dob_before = "9999-12-31";
-                $dob_after = "0000-01-01";
-
-                foreach($params as $param) {
-                    $parts = explode("=", $param);
-                    switch($parts[0]) {
-                        case "name_hint":
-                            $name_hint = $parts[1];
-                            break;
-                        case "birth_before":
-                            $dob_before = $parts[1];
-                            break;
-                        case "birth_after":
-                            $dob_after = $parts[1];
-                            break;
-                    }
-                }
+                $name_hint = $_GET["name_hint"] ?? "";
+                $dob_before = $_GET["birth_before"] ?? "9999-12-31";
+                $dob_after = $_GET["birth_after"] ?? "0000-01-01";
 
                 echo json_encode(getAthletes($name_hint, $dob_before, $dob_after));
                 exit;
@@ -122,17 +69,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 echo json_encode(getAthlete($path[1]));
                 exit;
             case "teams":
-                $params = explode("&", explode("?", $path[0])[1]);
-                $hint = "";
-
-                foreach($params as $param) {
-                    $parts = explode("=", $param);
-                    switch($parts[0]) {
-                        case "hint":
-                            $hint = $parts[1];
-                            break;
-                    }
-                }
+                $hint = $_GET["hint"] ?? "";
                 require "utils/queries.php";
                 echo json_encode(getTeams($hint));
                 exit;
