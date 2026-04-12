@@ -1,9 +1,9 @@
 <?php
 
-$servername = "mykayak.fuffo.net";
-$db = "mykayak";
-$username = getenv('DB_USER');
-$password = getenv('DB_PASSWORD');
+$servername = getenv('DB_HOST') ?: "localhost";
+$db = getenv('DB_NAME') ?: "mykayak";
+$username = getenv('DB_USER') ?: "root";
+$password = getenv('DB_PASSWORD') ?: "";
 
 $conn = null;
 

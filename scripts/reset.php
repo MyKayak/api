@@ -56,7 +56,8 @@ $level_map = [
     "006" => "DF", "007" => "SR",
 ];
 
-$years = range(2022, getdate()['year']);
+$is_recent = in_array('--recent', $argv);
+$years = $is_recent ? [getdate()['year']] : range(2022, getdate()['year']);
 
 foreach ($years as $year) {
     $meets_url = "https://apimanvarie.ficr.it/VAR/mpcache-30/get/schedule/$year/*/19";
@@ -78,7 +79,11 @@ foreach ($years as $year) {
     }
 }
 
-$meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
+if ($is_recent) {
+    $meetIDs = $conn->query("SELECT meet_id FROM meets WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)")->fetchAll(PDO::FETCH_COLUMN);
+} else {
+    $meetIDs = $conn->query("SELECT meet_id FROM meets")->fetchAll(PDO::FETCH_COLUMN);
+}
 
 foreach ($meetIDs as $meetID) {
     $program_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-30/get/programdate/$meetID";
@@ -118,7 +123,11 @@ foreach ($meetIDs as $meetID) {
     }
 }
 
-$races = $conn->query("SELECT * FROM races")->fetchAll(PDO::FETCH_ASSOC);
+if ($is_recent) {
+    $races = $conn->query("SELECT races.* FROM races JOIN meets USING (meet_id) WHERE meets.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $races = $conn->query("SELECT * FROM races")->fetchAll(PDO::FETCH_ASSOC);
+}
 
 function to_milliseconds($time)
 {
