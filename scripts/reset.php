@@ -2,7 +2,7 @@
 
 set_time_limit(40 * 60);
 
-require_once '../src/utils/connect.php';
+require_once __DIR__ . '/../src/utils/connect.php';
 
 function fix_ficr_string($str) // courtesy of Gemini <3
 {
@@ -78,6 +78,8 @@ foreach ($years as $year) {
         ]);
     }
 }
+
+$conn->query("UPDATE meets SET is_championship = TRUE WHERE name LIKE '%campionat%' AND (name LIKE '%italian%' OR name LIKE '%nazional%')");
 
 if ($is_recent) {
     $meetIDs = $conn->query("SELECT meet_id FROM meets WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)")->fetchAll(PDO::FETCH_COLUMN);

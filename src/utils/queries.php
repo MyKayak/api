@@ -17,9 +17,9 @@ function getMeets(){
 function getRaces($meet_id){
     require "connect.php";
     $races = [];
-    $stmt = $conn->prepare("SELECT * FROM races WHERE meet_id = :meet_id");
+    $stmt = $conn->prepare("SELECT * FROM races WHERE meet_id LIKE :meet_id");
     $meet_id = str_replace("%20"," ", $meet_id);
-    $stmt->bindParam(":meet_id", $meet_id);
+    $stmt->bindValue(":meet_id", "%$meet_id%");
     $stmt->execute();
     foreach($stmt->fetchAll() as $race){
         $races[] = [
@@ -277,11 +277,15 @@ function getAthlete($athlete_id){
     $stmt = $conn->prepare("CALL get_athlete_current_team(:athlete_id)");
     $stmt->execute(["athlete_id" => $athlete_id]);
     $team = $stmt->fetch(PDO::FETCH_ASSOC);
-    $athlete["team"] = [
-        "id" => $team["team_id"],
-        "name" => $team["team_name"],
-        "logo" => $team["logo"],
-    ];
+    if ($team) {
+        $athlete["team"] = [
+            "id" => $team["team_id"],
+            "name" => $team["team_name"],
+            "logo" => $team["logo"],
+        ];
+    } else {
+        $athlete["team"] = null;
+    }
 
     $athlete["personal_records"] = getPersonalRecords($athlete_id);
     $athlete["time_progression"] = getAthleteTimeProgression($athlete_id);
@@ -307,8 +311,13 @@ function getTeam($team_id){
     require "connect.php";
     $stmt = $conn->prepare("SELECT * FROM teams WHERE team_id = :id");
     $stmt->execute(["id" => $team_id]);
-    $team = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-    $stmt = $conn->prepare("SELECT * FROM titles_view WHERE team_id = :id GROUP BY performance_id");
+    $team = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$team) {
+        return null;
+    }
+    
+    $team["titles"] = [];
+    $stmt = $conn->prepare("SELECT DISTINCT performance_id, time_ms, start_time, distance, category, division, boat, location FROM titles_view WHERE team_id = :id ORDER BY start_time DESC");
     $stmt->execute(["id" => $team_id]);
     $team_titles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach($team_titles as $title){
