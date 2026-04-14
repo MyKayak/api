@@ -146,17 +146,24 @@ function to_milliseconds($time)
 }
 
 foreach ($races as $race) {
-    $result_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/result/" . str_replace(" ", "", $race["meet_id"]) . "/KY/" . str_replace("-", "/", str_replace(" ", "", $race["race_code"]));
+    $base_url_parts = str_replace(" ", "", $race["meet_id"]) . "/KY/" . str_replace("-", "/", str_replace(" ", "", $race["race_code"]));
+    $result_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/result/" . $base_url_parts;
+    $startlist_url = "https://apicanoavelocita.ficr.it/CAV/mpcache-10/get/startlist/" . $base_url_parts;
+
     $race_json = @file_get_contents($result_url);
-    if ($race_json === false) {
-        error_log("Failed to fetch result from URL: " . $result_url);
-        continue;
-    }
     $raceData = json_decode($race_json);
+    $is_result_flag = true;
+
+    if (!$race_json || !isset($raceData->data->data) || count($raceData->data->data) === 0) {
+        $race_json = @file_get_contents($startlist_url);
+        $raceData = json_decode($race_json);
+        $is_result_flag = false;
+    }
 
     if (!isset($raceData->data->data) || count($raceData->data->data) === 0) {
         continue;
     }
+
     foreach ($raceData->data->data as $performance) {
         try {
             $team_id = $performance->PlaTeamCod;
@@ -167,28 +174,26 @@ foreach ($races as $race) {
                 $startTime = $eventDate->format('Y-m-d') . " " . ($raceData->data->Event->Time ?? "00:00") . ":00";
             }
 
-            $stmt = $conn->prepare("INSERT IGNORE INTO heats (race_id, heat_index, start_time) values (:race_id, :heat_index, :start_time)");
+            $stmt = $conn->prepare("INSERT INTO heats (race_id, heat_index, start_time, is_result) 
+                                    VALUES (:race_id, :heat_index, :start_time, :is_result) 
+                                    ON DUPLICATE KEY UPDATE is_result = VALUES(is_result), start_time = VALUES(start_time)");
             $stmt->execute([
                 "race_id" => $race["race_id"],
                 "heat_index" => $performance->b,
-                "start_time" => $startTime
+                "start_time" => $startTime,
+                "is_result" => $is_result_flag ? 1 : 0
             ]);
-            $heat_id = $conn->lastInsertId();
+            
+            $stmt_get_heat = $conn->prepare("SELECT heat_id FROM heats WHERE race_id = :race_id AND heat_index = :heat_index");
+            $stmt_get_heat->execute([
+                "race_id" => $race["race_id"],
+                "heat_index" => $performance->b
+            ]);
+            $heat_id = $stmt_get_heat->fetchColumn();
 
-            if ($heat_id == 0) {
-                // If INSERT IGNORE ignored the row, we need to fetch the existing heat_id
-                $stmt_get_heat = $conn->prepare("SELECT heat_id FROM heats WHERE race_id = :race_id AND heat_index = :heat_index");
-                $stmt_get_heat->execute([
-                    "race_id" => $race["race_id"],
-                    "heat_index" => $performance->b
-                ]);
-                $heat_row = $stmt_get_heat->fetch(PDO::FETCH_ASSOC);
-                if ($heat_row) {
-                    $heat_id = $heat_row['heat_id'];
-                } else {
-                    error_log("Failed to retrieve heat_id for race " . $race['race_id'] . " index " . $performance->b);
-                    continue;
-                }
+            if (!$heat_id) {
+                error_log("Failed to retrieve heat_id for race " . $race['race_id'] . " index " . $performance->b);
+                continue;
             }
 
             $team_id_padded = str_pad($team_id, 5, "0", STR_PAD_LEFT);
@@ -200,39 +205,54 @@ foreach ($races as $race) {
 
             $time_ms = null;
             $status = null;
-            $qual_info = null;
+            $placement = isset($performance->PlaCls) ? $performance->PlaCls : null;
 
-            $mem_prest_val = $performance->MemPrest;
-            $status_codes = ['NP', 'NA', 'SQ', 'RIT'];
-            $codes_equiv = ['NP' => 'DNS', 'NA' => 'DNF', 'SQ' => 'DSQ', 'RIT' => 'RET'];
+            if (isset($performance->MemPrest)) {
+                $mem_prest_val = $performance->MemPrest;
+                $status_codes = ['NP', 'NA', 'SQ', 'RIT'];
+                $codes_equiv = ['NP' => 'DNS', 'NA' => 'DNF', 'SQ' => 'DSQ', 'RIT' => 'RET'];
 
-            if (in_array($mem_prest_val, $status_codes)) {
-                $status = $codes_equiv[$mem_prest_val];
-            } elseif (!empty($mem_prest_val) && $mem_prest_val !== " ") {
-                $time_ms = to_milliseconds($mem_prest_val);
+                if (in_array($mem_prest_val, $status_codes)) {
+                    $status = $codes_equiv[$mem_prest_val];
+                } elseif (!empty($mem_prest_val) && $mem_prest_val !== " ") {
+                    $time_ms = to_milliseconds($mem_prest_val);
+                }
             }
 
-            $race_id_parts = explode('-', $race['race_code']);
-            $c3 = end($race_id_parts);
+            $stmt_check = $conn->prepare("SELECT performance_id FROM performances WHERE heat_id = :heat_id AND lane = :lane");
+            $stmt_check->execute(["heat_id" => $heat_id, "lane" => $performance->PlaLane]);
+            $existing_perf = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
-            $stmt = $conn->prepare(
-                "INSERT IGNORE INTO performances (heat_id, team_id, lane, placement, time_ms, status) 
-                 VALUES (:heat_id, :team_id, :lane, :placement, :time_ms, :status)"
-            );
-            $stmt->execute([
-                "heat_id" => $heat_id,
-                "team_id" => $team_id_padded,
-                "lane" => $performance->PlaLane,
-                "placement" => $performance->PlaCls,
-                "time_ms" => $time_ms,
-                "status" => $status,
-            ]);
-
-            $performance_id = $conn->lastInsertId();
-
-            if ($performance_id == 0) {
-                continue;
+            if ($existing_perf) {
+                $performance_id = $existing_perf['performance_id'];
+                $stmt = $conn->prepare(
+                    "UPDATE performances SET team_id = :team_id, placement = :placement, time_ms = :time_ms, status = :status WHERE performance_id = :performance_id"
+                );
+                $stmt->execute([
+                    "team_id" => $team_id_padded,
+                    "placement" => $placement,
+                    "time_ms" => $time_ms,
+                    "status" => $status,
+                    "performance_id" => $performance_id
+                ]);
+            } else {
+                $stmt = $conn->prepare(
+                    "INSERT INTO performances (heat_id, team_id, lane, placement, time_ms, status) 
+                     VALUES (:heat_id, :team_id, :lane, :placement, :time_ms, :status)"
+                );
+                $stmt->execute([
+                    "heat_id" => $heat_id,
+                    "team_id" => $team_id_padded,
+                    "lane" => $performance->PlaLane,
+                    "placement" => $placement,
+                    "time_ms" => $time_ms,
+                    "status" => $status,
+                ]);
+                $performance_id = $conn->lastInsertId();
             }
+
+            if (!$performance_id) continue;
+
 
             if (!empty($performance->MemQual)){
                 $stmt = $conn->prepare(

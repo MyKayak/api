@@ -27,9 +27,10 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
+                $as_startlist = ($_GET["startlist"] ?? "") === "true";
                 // TODO : require auth
                 require "utils/queries.php";
-                $heats = getHeats($path[1]);
+                $heats = getHeats($path[1], $as_startlist);
                 echo json_encode($heats);
                 exit;
             case "medal_table":

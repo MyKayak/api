@@ -59,6 +59,9 @@ components:
         start_time:
           type: string
           format: date-time
+        is_result:
+          type: boolean
+          description: True if the heat contains results, false if it is a startlist.
         performances:
           type: array
           items:
@@ -77,6 +80,7 @@ components:
           type: integer
         placement:
           type: integer
+          nullable: true
         time_ms:
           type: integer
           nullable: true
@@ -253,6 +257,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: startlist
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: If true, returns the data in startlist format (nullifying result-specific fields even if available).
       responses:
         "200":
           description: Successful response

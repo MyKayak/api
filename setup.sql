@@ -71,6 +71,7 @@ CREATE TABLE heats (
     heat_index INT NOT NULL,
     race_id INT NOT NULL,
     start_time DATETIME,
+    is_result BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (race_id) REFERENCES races(race_id) ON DELETE CASCADE,
     PRIMARY KEY (heat_id),
     UNIQUE KEY uq_heat (heat_index, race_id),
@@ -88,12 +89,7 @@ CREATE TABLE performances (
     points INT DEFAULT 0,
     FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
     INDEX idx_performances_heat_id (heat_id),
-    INDEX idx_performances_team_id (team_id),
-    CONSTRAINT chk_time_or_status CHECK (
-        (time_ms IS NULL AND status IS NOT NULL)
-            OR
-        (time_ms IS NOT NULL AND status IS NULL)
-    )
+    INDEX idx_performances_team_id (team_id)
 );
 
 CREATE TABLE outcomes (

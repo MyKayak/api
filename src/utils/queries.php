@@ -35,7 +35,7 @@ function getRaces($meet_id){
     return $races;
 }
 
-function getHeats($race_id){
+function getHeats($race_id, $as_startlist = false){
     require "connect.php";
     $heats = [];
     $stmt = $conn->prepare("SELECT * FROM heats WHERE  race_id = :race_id");
@@ -46,13 +46,14 @@ function getHeats($race_id){
             "id" => $heat["heat_id"],
             "index" => $heat["heat_index"],
             "start_time" => $heat["start_time"],
-            "performances" => getPerformances($heat["heat_id"]),
+            "is_result" => $as_startlist ? false : (bool)$heat["is_result"],
+            "performances" => getPerformances($heat["heat_id"], $as_startlist),
         ];
     }
     return $heats;
 }
 
-function getPerformances($heat_id){
+function getPerformances($heat_id, $as_startlist = false){
     require "connect.php";
     $performances = [];
     $stmt = $conn->prepare("SELECT * FROM performances INNER JOIN teams USING (team_id) WHERE heat_id = :heat_id");
@@ -64,10 +65,10 @@ function getPerformances($heat_id){
             "team_id" => $performance["team_id"],
             "team_name" => $performance["name"],
             "lane" => $performance["lane"],
-            "placement" => $performance["placement"],
-            "time_ms" => $performance["time_ms"],
-            "status" => $performance["status"],
-            "points" => $performance["points"],
+            "placement" => $as_startlist ? null : $performance["placement"],
+            "time_ms" => $as_startlist ? null : $performance["time_ms"],
+            "status" => $as_startlist ? null : $performance["status"],
+            "points" => $as_startlist ? 0 : $performance["points"],
             "athletes" => getPerformanceAthletes($performance["performance_id"]),
         ];
     }
