@@ -87,7 +87,6 @@ CREATE TABLE performances (
     status VARCHAR(3) NULL,
     points INT DEFAULT 0,
     FOREIGN KEY (heat_id) REFERENCES heats(heat_id) ON DELETE CASCADE,
-    UNIQUE KEY uq_performances_heat_placement (heat_id, placement),
     INDEX idx_performances_heat_id (heat_id),
     INDEX idx_performances_team_id (team_id),
     CONSTRAINT chk_time_or_status CHECK (
