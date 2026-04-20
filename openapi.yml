@@ -172,6 +172,8 @@ components:
           format: date
         distance:
           type: integer
+        boat:
+          type: string
         category:
           type: string
           description: Gender category (M/F)
@@ -353,6 +355,20 @@ paths:
             type: string
             format: date
           description: Filter races from this date onwards. Use for seasonal rankings (e.g., last year).
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter races up to this date. Use with after for a specific season or date range.
+        - name: boat
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [K1, C1]
+          description: Filter by boat type (K1 or C1)
       responses:
         "200":
           description: Successful response

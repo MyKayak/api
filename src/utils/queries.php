@@ -137,7 +137,7 @@ function getMedalTable($meet_id, $after, $before, $championships){
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function getAthleteRankings($category, $division, $distance, $after){
+function getAthleteRankings($category, $division, $distance, $after, $before, $boat){
     require "connect.php";
     $conditions = [];
     $params = [];
@@ -158,6 +158,14 @@ function getAthleteRankings($category, $division, $distance, $after){
         $conditions[] = "date >= :after";
         $params[":after"] = $after;
     }
+    if(!empty($before)){
+        $conditions[] = "date <= :before";
+        $params[":before"] = $before;
+    }
+    if(!empty($boat)){
+        $conditions[] = "boat = :boat";
+        $params[":boat"] = $boat;
+    }
     
     $where = empty($conditions) ? "" : "WHERE " . implode(" AND ", $conditions);
 
@@ -167,12 +175,13 @@ function getAthleteRankings($category, $division, $distance, $after){
         surname,
         birth_date,
         distance,
+        boat,
         category,
         division,
         time_ms
         FROM athlete_rankings_view ar
         $where
-        ORDER BY athlete_id, distance, category, division, time_ms ASC";
+        ORDER BY athlete_id, distance, boat, category, division, time_ms ASC";
     
     $stmt = $conn->prepare($query);
     $stmt->execute($params);
@@ -180,7 +189,7 @@ function getAthleteRankings($category, $division, $distance, $after){
 
     $athletes = [];
     foreach($results as $row){
-        $key = $row["athlete_id"] . "_" . $row["distance"] . "_" . $row["category"] . "_" . $row["division"];
+        $key = $row["athlete_id"] . "_" . $row["distance"] . "_" . $row["boat"] . "_" . $row["category"] . "_" . $row["division"];
         if(!isset($athletes[$key])){
             $athletes[$key] = [
                 "athlete_id" => $row["athlete_id"],
@@ -188,6 +197,7 @@ function getAthleteRankings($category, $division, $distance, $after){
                 "surname" => $row["surname"],
                 "birth_date" => $row["birth_date"],
                 "distance" => $row["distance"],
+                "boat" => $row["boat"],
                 "category" => $row["category"],
                 "division" => $row["division"],
                 "best_time" => $row["time_ms"],
@@ -208,6 +218,7 @@ function getAthleteRankings($category, $division, $distance, $after){
                 "surname" => $athlete["surname"],
                 "birth_date" => $athlete["birth_date"],
                 "distance" => $athlete["distance"],
+                "boat" => $athlete["boat"],
                 "category" => $athlete["category"],
                 "division" => $athlete["division"],
                 "best_time" => $athlete["best_time"],

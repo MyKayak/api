@@ -205,7 +205,7 @@ foreach ($races as $race) {
 
             $time_ms = null;
             $status = null;
-            $placement = isset($performance->PlaCls) ? $performance->PlaCls : null;
+            $placement = (isset($performance->PlaCls) && is_numeric($performance->PlaCls)) ? (int)$performance->PlaCls : null;
 
             if (isset($performance->MemPrest)) {
                 $mem_prest_val = $performance->MemPrest;

@@ -173,6 +173,7 @@ SELECT
     athletes.surname,
     athletes.birth_date,
     races.distance,
+    races.boat,
     races.category,
     races.division,
     performances.time_ms,
@@ -187,7 +188,7 @@ WHERE races.boat IN ('K1', 'C1')
   AND performances.time_ms IS NOT NULL
   AND performances.status IS NULL
   AND performances.time_ms >= 25000
-ORDER BY athletes.athlete_id, races.distance, races.category, races.division, meets.date DESC;
+ORDER BY athletes.athlete_id, races.distance, races.boat, races.category, races.division, meets.date DESC;
 
 CREATE OR REPLACE VIEW personal_records_view AS (
     SELECT athlete_id, boat, distance, category, MIN(time_ms) AS time 

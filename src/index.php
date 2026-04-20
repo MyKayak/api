@@ -48,12 +48,13 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 $division = $_GET["division"] ?? "";
                 $distance = $_GET["distance"] ?? "";
                 $after = $_GET["after"] ?? "";
-                
+                $before = $_GET["before"] ?? "";
+                $boat = $_GET["boat"] ?? "";
+
                 // TODO : require auth
                 require "utils/queries.php";
-                echo json_encode(getAthleteRankings($category, $division, $distance, $after));
-                exit;
-            case "athletes":
+                echo json_encode(getAthleteRankings($category, $division, $distance, $after, $before, $boat));
+                exit;            case "athletes":
                 require "utils/queries.php";
                 $name_hint = $_GET["name_hint"] ?? "";
                 $dob_before = $_GET["birth_before"] ?? "9999-12-31";
