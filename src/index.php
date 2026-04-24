@@ -59,8 +59,10 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 $name_hint = $_GET["name_hint"] ?? "";
                 $dob_before = $_GET["birth_before"] ?? "9999-12-31";
                 $dob_after = $_GET["birth_after"] ?? "0000-01-01";
+                $limit = $_GET["limit"] ?? 100;
+                $offset = $_GET["offset"] ?? 0;
 
-                echo json_encode(getAthletes($name_hint, $dob_before, $dob_after));
+                echo json_encode(getAthletes($name_hint, $dob_before, $dob_after, $limit, $offset));
                 exit;
             case "athlete":
                 if(empty($path[1])) {

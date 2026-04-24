@@ -403,6 +403,20 @@ paths:
             type: string
             format: date
           description: Filter athletes born after this date
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+          description: Maximum number of athletes to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Number of athletes to skip
       responses:
         "200":
           description: Successful response

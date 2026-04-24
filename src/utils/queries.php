@@ -234,15 +234,16 @@ function getAthleteRankings($category, $division, $distance, $after, $before, $b
     return $rankings;
 }
 
-function getAthletes($name_hint, $dob_before, $dob_after){
+function getAthletes($name_hint, $dob_before, $dob_after, $limit = 100, $offset = 0){
     require "connect.php";
-    $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date >= :dob_after AND birth_date <= :dob_before AND (name LIKE :name_hint OR surname LIKE :surname_hint)");
-    $stmt->execute([
-        "dob_after" => $dob_after,
-        "dob_before" => $dob_before,
-        "name_hint" => "%{$name_hint}%",
-        "surname_hint" => "%{$name_hint}%"
-    ]);
+    $stmt = $conn->prepare("SELECT * FROM athletes WHERE birth_date >= :dob_after AND birth_date <= :dob_before AND (name LIKE :name_hint OR surname LIKE :surname_hint) LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':dob_after', $dob_after);
+    $stmt->bindValue(':dob_before', $dob_before);
+    $stmt->bindValue(':name_hint', "%{$name_hint}%");
+    $stmt->bindValue(':surname_hint', "%{$name_hint}%");
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
