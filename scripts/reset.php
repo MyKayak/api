@@ -111,7 +111,7 @@ foreach ($meetIDs as $meetID) {
                 continue;
             }
 
-            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_code, meet_id, distance, division, category, boat, level) VALUES (:race_code, :meet_id, :distance, :division, :category, :boat, :level)");
+            $stmt = $conn->prepare("INSERT IGNORE INTO races (race_code, meet_id, distance, division, category, boat, level, start_time) VALUES (:race_code, :meet_id, :distance, :division, :category, :boat, :level, :start_time)");
             $stmt->execute([
                 "meet_id" => $meetID,
                 "race_code" => "$race->c0-$race->c1-" . substr($race->c2, 1) . "-$race->c3",
@@ -119,7 +119,8 @@ foreach ($meetIDs as $meetID) {
                 "division" => $division,
                 "category" => $category,
                 "boat" => $boat,
-                "level" => $level
+                "level" => $level,
+                "start_time" => DateTime::createFromFormat('d/m/Y', $raceDay->gi)->format('Y-m-d') . " " . $race->h . ":00"
             ]);
         }
     }
@@ -164,25 +165,37 @@ foreach ($races as $race) {
         continue;
     }
 
-    foreach ($raceData->data->data as $performance) {
-        try {
-            $team_id = $performance->PlaTeamCod;
-
-            $eventDate = DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date);
-            $startTime = null;
-            if ($eventDate) {
-                $startTime = $eventDate->format('Y-m-d') . " " . ($raceData->data->Event->Time ?? "00:00") . ":00";
+            $heatTimes = [];
+            if (isset($raceData->data->Heat) && is_array($raceData->data->Heat)) {
+                foreach ($raceData->data->Heat as $heat) {
+                    $hDate = DateTime::createFromFormat('d/m/Y', $heat->UffDate);
+                    if ($hDate) {
+                        $heatTimes[$heat->NumGara] = $hDate->format('Y-m-d') . " " . ($heat->UffTime ?? "00:00") . ":00";
+                    }
+                }
             }
 
-            $stmt = $conn->prepare("INSERT INTO heats (race_id, heat_index, start_time, is_result) 
-                                    VALUES (:race_id, :heat_index, :start_time, :is_result) 
-                                    ON DUPLICATE KEY UPDATE is_result = VALUES(is_result), start_time = VALUES(start_time)");
-            $stmt->execute([
-                "race_id" => $race["race_id"],
-                "heat_index" => $performance->b,
-                "start_time" => $startTime,
-                "is_result" => $is_result_flag ? 1 : 0
-            ]);
+            foreach ($raceData->data->data as $performance) {
+                try {
+                    $team_id = $performance->PlaTeamCod;
+
+                    $startTime = $heatTimes[$performance->b] ?? null;
+                    if (!$startTime) {
+                        $eventDate = DateTime::createFromFormat('d/m/Y', $raceData->data->Event->Date);
+                        if ($eventDate) {
+                            $startTime = $eventDate->format('Y-m-d') . " " . ($raceData->data->Event->Time ?? "00:00") . ":00";
+                        }
+                    }
+
+                    $stmt = $conn->prepare("INSERT INTO heats (race_id, heat_index, start_time, is_result) 
+                                            VALUES (:race_id, :heat_index, :start_time, :is_result) 
+                                            ON DUPLICATE KEY UPDATE is_result = VALUES(is_result), start_time = VALUES(start_time)");
+                    $stmt->execute([
+                        "race_id" => $race["race_id"],
+                        "heat_index" => $performance->b,
+                        "start_time" => $startTime,
+                        "is_result" => $is_result_flag ? 1 : 0
+                    ]);
             
             $stmt_get_heat = $conn->prepare("SELECT heat_id FROM heats WHERE race_id = :race_id AND heat_index = :heat_index");
             $stmt_get_heat->execute([

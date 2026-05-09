@@ -61,6 +61,7 @@ CREATE TABLE races (
     category CHAR(1) NOT NULL,
     boat CHAR(2) NOT NULL,
     level CHAR(2) NOT NULL,
+    start_time DATETIME,
     FOREIGN KEY (meet_id) REFERENCES meets(meet_id) ON DELETE CASCADE,
     UNIQUE KEY uq_races_code_meet (race_code, meet_id),
     INDEX idx_races_meet_id (meet_id)
@@ -234,7 +235,7 @@ END //
 DELIMITER ;
 
 CREATE OR REPLACE VIEW titles_view AS
-SELECT athlete_id, performance_id, team_id, time_ms, athletes.name, surname, start_time, distance, division, category, boat, location FROM performances
+SELECT athlete_id, performance_id, team_id, time_ms, athletes.name, surname, heats.start_time, distance, division, category, boat, location FROM performances
 INNER JOIN performances_athletes USING (performance_id)
 INNER JOIN athletes USING (athlete_id)
 INNER JOIN heats USING (heat_id)
@@ -244,4 +245,4 @@ WHERE is_championship = true
 AND time_ms > 0
 AND placement = 1
 AND (level = 'DF' OR level = 'FA')
-ORDER BY start_time DESC;
+ORDER BY heats.start_time DESC;

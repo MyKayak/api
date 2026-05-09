@@ -30,6 +30,7 @@ function getRaces($meet_id){
             "category" => $race["category"],
             "boat" => $race["boat"],
             "level" => $race["level"],
+            "start_time" => $race["start_time"],
         ];
     }
     return $races;
