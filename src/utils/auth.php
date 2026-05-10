@@ -68,13 +68,11 @@ function loginAdmin($token) {
 function requireAdmin() {
     $token = null;
 
-    // Primary: set by .htaccess RewriteRule passthrough (most reliable)
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
         $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION']);
     } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
         $token = str_replace('Bearer ', '', $_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
     } else {
-        // Fallback: apache_request_headers() (works with mod_php, may fail with CGI/FPM)
         $headers = apache_request_headers();
         $auth_header = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         if ($auth_header) {
