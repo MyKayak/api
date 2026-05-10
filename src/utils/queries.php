@@ -9,6 +9,7 @@ function getMeets(){
             "name" => $meet["name"],
             "location" => $meet["location"],
             "date" => $meet["date"],
+            "is_championship" => (bool)$meet["is_championship"],
         ];
     }
     return $meets;
