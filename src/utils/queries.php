@@ -348,3 +348,30 @@ function getTeam($team_id){
 
     return $team;
 }
+
+function updateMeet($meet_id, $data) {
+    require "connect.php";
+    $allowed_fields = ['name', 'location', 'date', 'is_championship'];
+    $updates = [];
+    $params = ["meet_id" => $meet_id];
+
+    foreach ($data as $key => $value) {
+        if (in_array($key, $allowed_fields)) {
+            $updates[] = "$key = :$key";
+            $params[$key] = $value;
+        }
+    }
+
+    if (empty($updates)) return false;
+
+    $sql = "UPDATE meets SET " . implode(", ", $updates) . " WHERE meet_id = :meet_id";
+    $stmt = $conn->prepare($sql);
+    return $stmt->execute($params);
+}
+
+function updateTeamLogo($team_id, $logo_url) {
+    require "connect.php";
+    $stmt = $conn->prepare("UPDATE teams SET logo = :logo WHERE team_id = :team_id");
+    return $stmt->execute(["logo" => $logo_url, "team_id" => $team_id]);
+}
+

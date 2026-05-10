@@ -9,7 +9,6 @@ switch ($_SERVER["REQUEST_METHOD"]) {
     case "GET":
         switch ($path[0]) {
             case "meets":
-                // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getMeets());
                 exit;
@@ -18,7 +17,6 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
-                // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getRaces($path[1]));
                 exit;
@@ -28,7 +26,6 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                     exit;
                 }
                 $as_startlist = ($_GET["startlist"] ?? "") === "true";
-                // TODO : require auth
                 require "utils/queries.php";
                 $heats = getHeats($path[1], $as_startlist);
                 echo json_encode($heats);
@@ -39,7 +36,6 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 $after = $_GET["after"] ?? "";
                 $championships = ($_GET["only_championships"] ?? "") === "true";
 
-                // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getMedalTable($meet_id, $after, $before, $championships));
                 exit;
@@ -51,10 +47,10 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 $before = $_GET["before"] ?? "";
                 $boat = $_GET["boat"] ?? "";
 
-                // TODO : require auth
                 require "utils/queries.php";
                 echo json_encode(getAthleteRankings($category, $division, $distance, $after, $before, $boat));
-                exit;            case "athletes":
+                exit;
+            case "athletes":
                 require "utils/queries.php";
                 $name_hint = $_GET["name_hint"] ?? "";
                 $dob_before = $_GET["birth_before"] ?? "9999-12-31";
@@ -89,48 +85,34 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         break;
     case "POST":
         switch ($path[0]) {
-            case 'create_key':
-                require_once 'utils/auth.php';
-                $adminKey = $_SERVER["HTTP_X_ADMIN_API_KEY"] ?? "";
-                if (empty($adminKey) || !verifyAdminApiKey($adminKey)) {
-                    header("HTTP/1.1 401 Unauthorized");
-                    exit;
-                }
-                require_once 'utils/create_api_key.php';
-                echo json_encode(["key" => create_api_key($_POST["description"])]);
-                exit;
             case 'register':
                 require_once 'utils/auth.php';
-                if (empty($_POST["username"]) || empty($_POST["email"]) || empty($_POST["password"])) {
+                requireAdmin();
+                if (empty($_POST["username"]) || empty($_POST["password"])) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
                 try {
-                    $success = registerUser($_POST["username"], $_POST["email"], $_POST["password"]);
+                    $success = registerAdmin($_POST["username"], $_POST["password"]);
                     if ($success) {
                         header("HTTP/1.1 201 Created");
                         echo json_encode(["success" => true]);
                     } else {
                         header("HTTP/1.1 409 Conflict");
-                        echo json_encode(["error" => "Email already in use"]);
+                        echo json_encode(["error" => "Username already in use"]);
                     }
                 } catch (\PDOException $e) {
-                    if ($e->getCode() == 23000) {
-                        header("HTTP/1.1 409 Conflict");
-                        echo json_encode(["error" => "Username or email already in use"]);
-                    } else {
-                        header("HTTP/1.1 500 Internal Server Error");
-                        echo json_encode(["error" => "Internal Server Error"]);
-                    }
+                    header("HTTP/1.1 500 Internal Server Error");
+                    echo json_encode(["error" => "Internal Server Error"]);
                 }
                 exit;
             case 'login':
                 require_once 'utils/auth.php';
-                if (empty($_POST["email"]) || empty($_POST["password"])) {
+                if (empty($_POST["username"]) || empty($_POST["password"])) {
                     header("HTTP/1.1 400 Bad request");
                     exit;
                 }
-                $token = verifyUserCredentials($_POST["email"], $_POST["password"]);
+                $token = verifyAdminCredentials($_POST["username"], $_POST["password"]);
                 if ($token) {
                     echo json_encode(["token" => $token]);
                 } else {
@@ -139,6 +121,49 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 }
                 exit;
         }
+        break;
+    case "PATCH":
+        if ($path[0] === 'meets' && !empty($path[1])) {
+            require_once 'utils/auth.php';
+            requireAdmin();
+            require_once 'utils/queries.php';
+            
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                header("HTTP/1.1 400 Bad request");
+                exit;
+            }
+            
+            if (updateMeet($path[1], $input)) {
+                echo json_encode(["success" => true]);
+            } else {
+                header("HTTP/1.1 500 Internal Server Error");
+                echo json_encode(["error" => "Failed to update meet"]);
+            }
+            exit;
+        }
+        break;
+    case "PUT":
+        if ($path[0] === 'teams' && !empty($path[1]) && ($path[2] ?? '') === 'logo') {
+            require_once 'utils/auth.php';
+            requireAdmin();
+            require_once 'utils/queries.php';
+            
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!isset($input['logo'])) {
+                header("HTTP/1.1 400 Bad request");
+                exit;
+            }
+            
+            if (updateTeamLogo($path[1], $input['logo'])) {
+                echo json_encode(["success" => true]);
+            } else {
+                header("HTTP/1.1 500 Internal Server Error");
+                echo json_encode(["error" => "Failed to update team logo"]);
+            }
+            exit;
+        }
+        break;
 }
 
 header("HTTP/1.1 404 Not Found");

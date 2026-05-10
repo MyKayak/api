@@ -1,8 +1,5 @@
 USE mykayak;
 
-DROP TABLE IF EXISTS api_keys;
-DROP TABLE IF EXISTS admin_api_keys;
-
 DROP TABLE IF EXISTS followed_teams;
 DROP TABLE IF EXISTS followed_athletes;
 DROP TABLE IF EXISTS tokens;
@@ -13,7 +10,7 @@ DROP TABLE IF EXISTS performances;
 DROP TABLE IF EXISTS heats;
 DROP TABLE IF EXISTS races;
 DROP TABLE IF EXISTS meets;
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS athletes;
 DROP TABLE IF EXISTS teams;
 
@@ -33,10 +30,9 @@ CREATE TABLE athletes (
     INDEX idx_athletes_name (name, surname)
 );
 
-CREATE TABLE users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE admins (
+    admin_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
 
@@ -110,40 +106,26 @@ CREATE TABLE performances_athletes (
 
 CREATE TABLE tokens (
     token_id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    admin_id INT NOT NULL,
     token CHAR(64) NOT NULL,
     expiration_date DATE NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (admin_id) REFERENCES admins(admin_id) ON DELETE CASCADE
 );
 
 CREATE TABLE followed_athletes (
-    user_id INT NOT NULL,
+    admin_id INT NOT NULL,
     athlete_id INT NOT NULL,
-    PRIMARY KEY (user_id, athlete_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    PRIMARY KEY (admin_id, athlete_id),
+    FOREIGN KEY (admin_id) REFERENCES admins(admin_id) ON DELETE CASCADE,
     FOREIGN KEY (athlete_id) REFERENCES athletes(athlete_id) ON DELETE CASCADE
 );
 
 CREATE TABLE followed_teams (
-    user_id INT NOT NULL,
+    admin_id INT NOT NULL,
     team_id CHAR(5) NOT NULL,
-    PRIMARY KEY (user_id, team_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    PRIMARY KEY (admin_id, team_id),
+    FOREIGN KEY (admin_id) REFERENCES admins(admin_id) ON DELETE CASCADE,
     FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE
-);
-
-CREATE TABLE api_keys (
-    api_key CHAR(64) PRIMARY KEY,
-    description VARCHAR(255),
-    is_active BOOL DEFAULT TRUE,
-    uses INT DEFAULT 0
-);
-
-CREATE TABLE admin_api_keys (
-    api_key CHAR(64) PRIMARY KEY,
-    description VARCHAR(255),
-    is_active BOOL DEFAULT TRUE,
-    uses INT DEFAULT 0
 );
 
 CREATE OR REPLACE VIEW medal_table_view AS

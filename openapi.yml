@@ -2,20 +2,16 @@ openapi: 3.1.0
 info:
   title: MyKayak API
   version: 1.0.0
-  description: Enhanced FICr API
+  description: Enhanced FICr API with Admin Modification Capabilities
 servers:
   - url: https://api.mykayak.fuffo.net
     description: Production server
 components:
   securitySchemes:
-    standardAuth:
-      type: apiKey
-      in: cookie
-      name: X-API-KEY
-    adminAuth:
-      type: apiKey
-      in: cookie
-      name: X-ADMIN-API-KEY
+    adminToken:
+      type: http
+      scheme: bearer
+      description: Bearer token obtained from /login
 
   schemas:
     Meet:
@@ -48,6 +44,9 @@ components:
           type: string
         level:
           type: string
+        start_time:
+          type: string
+          format: date-time
 
     Heat:
       type: object
@@ -213,8 +212,6 @@ paths:
   /meets:
     get:
       summary: Get all meets
-      security:
-        - standardAuth: []
       responses:
         "200":
           description: Successful response
@@ -225,11 +222,42 @@ paths:
                 items:
                   $ref: '#/components/schemas/Meet'
 
+  /meets/{meet_id}:
+    patch:
+      summary: Update meet attributes (Admin only)
+      security:
+        - adminToken: []
+      parameters:
+        - name: meet_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                is_championship:
+                  type: boolean
+      responses:
+        "200":
+          description: Meet updated successfully
+        "401":
+          description: Unauthorized
+
   /races/{meet_id}:
     get:
       summary: Get races for a meet
-      security:
-        - standardAuth: []
       parameters:
         - name: meet_id
           in: path
@@ -251,8 +279,6 @@ paths:
   /heats/{race_id}:
     get:
       summary: Get heats for a race
-      security:
-        - standardAuth: []
       parameters:
         - name: race_id
           in: path
@@ -282,8 +308,6 @@ paths:
     get:
       summary: Get medal table with optional filters
       description: Returns medal standings. Use filters to get standings for a specific meet, season, date range, or all-time. Leave all params empty for all-time standings across all races.
-      security:
-        - standardAuth: []
       parameters:
         - name: meet_id
           in: query
@@ -326,8 +350,6 @@ paths:
     get:
       summary: Get athlete rankings for single-boat events (K1/C1)
       description: Returns athlete rankings ordered by average of best 3 times. Filters by category (gender), division, distance, and date range. Use `after` to get rankings for the last year (e.g., `after=2025-01-01`). Leave all params empty for all-time rankings across all events.
-      security:
-        - standardAuth: []
       parameters:
         - name: category
           in: query
@@ -521,38 +543,40 @@ paths:
         "400":
           description: Team ID not provided
 
-  /create_key:
-    post:
-      summary: Create a new API key
-      description: Requires an admin API key. Returns the generated API key once inserted with the given description.
+  /teams/{team_id}/logo:
+    put:
+      summary: Update team logo (Admin only)
       security:
-        - adminAuth: []
+        - adminToken: []
+      parameters:
+        - name: team_id
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
+              required:
+                - logo
               properties:
-                description:
+                logo:
                   type: string
+                  description: The URL of the logo
       responses:
         "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  key:
-                    type: string
-                    example: bb4c16ee45465d0a
+          description: Logo updated successfully
         "401":
           description: Unauthorized
 
   /register:
     post:
-      summary: Register a new user
+      summary: Register a new admin (Admin only)
+      security:
+        - adminToken: []
       requestBody:
         required: true
         content:
@@ -561,28 +585,24 @@ paths:
               type: object
               required:
                 - username
-                - email
                 - password
               properties:
                 username:
                   type: string
-                email:
-                  type: string
-                  format: email
                 password:
                   type: string
                   format: password
       responses:
         "201":
-          description: User registered successfully
+          description: Admin registered successfully
         "400":
           description: Bad request (missing fields)
         "409":
-          description: Conflict (username or email already in use)
+          description: Conflict (username already in use)
 
   /login:
     post:
-      summary: Login a user
+      summary: Login an admin
       requestBody:
         required: true
         content:
@@ -590,12 +610,11 @@ paths:
             schema:
               type: object
               required:
-                - email
+                - username
                 - password
               properties:
-                email:
+                username:
                   type: string
-                  format: email
                 password:
                   type: string
                   format: password
