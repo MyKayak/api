@@ -354,20 +354,24 @@ function updateMeet($meet_id, $data) {
     require "connect.php";
     $allowed_fields = ['name', 'location', 'date', 'is_championship'];
     $updates = [];
-    $params = ["meet_id" => $meet_id];
+    $params = ["meet_id" => trim($meet_id)];
 
     foreach ($data as $key => $value) {
         if (in_array($key, $allowed_fields)) {
             $updates[] = "$key = :$key";
-            $params[$key] = $value;
+            // Explicitly cast booleans to int — PDO binds bool as empty string otherwise
+            $params[$key] = is_bool($value) ? (int)$value : $value;
         }
     }
 
     if (empty($updates)) return false;
 
-    $sql = "UPDATE meets SET " . implode(", ", $updates) . " WHERE meet_id = :meet_id";
+    // Use TRIM() in WHERE to match IDs that may have stored whitespace
+    $sql = "UPDATE meets SET " . implode(", ", $updates) . " WHERE TRIM(meet_id) = :meet_id";
     $stmt = $conn->prepare($sql);
-    return $stmt->execute($params);
+    $result = $stmt->execute($params);
+    error_log("[updateMeet] meet_id=$meet_id rows=" . $stmt->rowCount() . " result=" . ($result ? 'true' : 'false'));
+    return $result && $stmt->rowCount() > 0;
 }
 
 function updateTeamLogo($team_id, $logo_url) {
