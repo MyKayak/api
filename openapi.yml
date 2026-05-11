@@ -3,9 +3,14 @@ info:
   title: MyKayak API
   version: 1.0.0
   description: Enhanced FICr API with Admin Modification Capabilities
+  license:
+    name: MIT
+    identifier: MIT
 servers:
   - url: https://api.mykayak.fuffo.net
     description: Production server
+security:
+  - {} # Default to no security for public endpoints
 components:
   securitySchemes:
     adminToken:
@@ -14,6 +19,39 @@ components:
       description: Bearer token obtained from /login
 
   schemas:
+    Stats:
+      type: object
+      properties:
+        athletes:
+          type: integer
+        teams:
+          type: integer
+        meets:
+          type: integer
+        races:
+          type: integer
+        heats:
+          type: integer
+        performances:
+          type: integer
+        boats:
+          type: object
+          properties:
+            C1:
+              type: integer
+            C2:
+              type: integer
+            C4:
+              type: integer
+            K1:
+              type: integer
+            K2:
+              type: integer
+            K4:
+              type: integer
+            other:
+              type: integer
+
     Meet:
       type: object
       properties:
@@ -78,14 +116,11 @@ components:
         lane:
           type: integer
         placement:
-          type: integer
-          nullable: true
+          type: [integer, "null"]
         time_ms:
-          type: integer
-          nullable: true
+          type: [integer, "null"]
         status:
-          type: string
-          nullable: true
+          type: [string, "null"]
         points:
           type: integer
         athletes:
@@ -114,8 +149,7 @@ components:
         name:
           type: string
         logo:
-          type: string
-          nullable: true
+          type: [string, "null"]
 
     TeamTitle:
       type: object
@@ -209,8 +243,25 @@ components:
           description: Date when the race was held
 
 paths:
+  /stats:
+    get:
+      operationId: getStats
+      summary: Get overall database statistics
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        "400":
+          description: Invalid request
+        "500":
+          description: Internal Server Error
+
   /meets:
     get:
+      operationId: getMeets
       summary: Get all meets
       responses:
         "200":
@@ -221,9 +272,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Meet'
+        "400":
+          description: Invalid request
+        "500":
+          description: Internal Server Error
 
   /meets/{meet_id}:
     patch:
+      operationId: updateMeet
       summary: Update meet attributes (Admin only)
       security:
         - adminToken: []
@@ -252,11 +308,16 @@ paths:
       responses:
         "200":
           description: Meet updated successfully
+        "400":
+          description: Bad request
         "401":
           description: Unauthorized
+        "404":
+          description: Meet not found
 
   /races/{meet_id}:
     get:
+      operationId: getRacesByMeet
       summary: Get races for a meet
       parameters:
         - name: meet_id
@@ -278,6 +339,7 @@ paths:
 
   /heats/{race_id}:
     get:
+      operationId: getHeatsByRace
       summary: Get heats for a race
       parameters:
         - name: race_id
@@ -306,6 +368,7 @@ paths:
 
   /medal_table:
     get:
+      operationId: getMedalTable
       summary: Get medal table with optional filters
       description: Returns medal standings. Use filters to get standings for a specific meet, season, date range, or all-time. Leave all params empty for all-time standings across all races.
       parameters:
@@ -345,9 +408,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MedalTableEntry'
+        "400":
+          description: Invalid parameters
 
   /rankings:
     get:
+      operationId: getRankings
       summary: Get athlete rankings for single-boat events (K1/C1)
       description: Returns athlete rankings ordered by average of best 3 times. Filters by category (gender), division, distance, and date range. Use `after` to get rankings for the last year (e.g., `after=2025-01-01`). Leave all params empty for all-time rankings across all events.
       parameters:
@@ -400,9 +466,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AthleteRanking'
+        "400":
+          description: Invalid parameters
 
   /athletes:
     get:
+      operationId: searchAthletes
       summary: Search athletes with filters
       parameters:
         - name: name_hint
@@ -448,9 +517,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Athlete'
+        "400":
+          description: Invalid parameters
 
   /athlete/{athlete_id}:
     get:
+      operationId: getAthleteById
       summary: Get athlete details including current team, personal records and time progression
       parameters:
         - name: athlete_id
@@ -490,9 +562,12 @@ paths:
                         $ref: '#/components/schemas/TimeProgressionEntry'
         "400":
           description: Athlete ID not provided
+        "404":
+          description: Athlete not found
 
   /teams:
     get:
+      operationId: searchTeams
       summary: Search teams by name
       parameters:
         - name: hint
@@ -511,9 +586,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Team'
+        "400":
+          description: Invalid parameters
 
   /team/{team_id}:
     get:
+      operationId: getTeamById
       summary: Get team details including titles
       parameters:
         - name: team_id
@@ -534,17 +612,19 @@ paths:
                   name:
                     type: string
                   logo:
-                    type: string
-                    nullable: true
+                    type: [string, "null"]
                   titles:
                     type: array
                     items:
                       $ref: '#/components/schemas/TeamTitle'
         "400":
           description: Team ID not provided
+        "404":
+          description: Team not found
 
   /teams/{team_id}/logo:
     put:
+      operationId: updateTeamLogo
       summary: Update team logo (Admin only)
       security:
         - adminToken: []
@@ -569,11 +649,16 @@ paths:
       responses:
         "200":
           description: Logo updated successfully
+        "400":
+          description: Bad request
         "401":
           description: Unauthorized
+        "404":
+          description: Team not found
 
   /register:
     post:
+      operationId: registerAdmin
       summary: Register a new admin (Admin only)
       security:
         - adminToken: []
@@ -597,11 +682,14 @@ paths:
           description: Admin registered successfully
         "400":
           description: Bad request (missing fields)
+        "401":
+          description: Unauthorized
         "409":
           description: Conflict (username already in use)
 
   /login:
     post:
+      operationId: loginAdmin
       summary: Login an admin
       requestBody:
         required: true

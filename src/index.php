@@ -68,6 +68,10 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 require "utils/queries.php";
                 echo json_encode(getAthlete($path[1]));
                 exit;
+            case "stats":
+                require "utils/queries.php";
+                echo json_encode(getStats());
+                exit;
             case "teams":
                 $hint = $_GET["hint"] ?? "";
                 require "utils/queries.php";

@@ -371,6 +371,44 @@ function updateMeet($meet_id, $data) {
     return $result && $stmt->rowCount() > 0;
 }
 
+function getStats() {
+    require "connect.php";
+    $stats = [];
+    $stats["athletes"] = (int)$conn->query("SELECT COUNT(*) FROM athletes")->fetchColumn();
+    $stats["teams"] = (int)$conn->query("SELECT COUNT(*) FROM teams")->fetchColumn();
+    $stats["meets"] = (int)$conn->query("SELECT COUNT(*) FROM meets")->fetchColumn();
+    $stats["races"] = (int)$conn->query("SELECT COUNT(*) FROM races")->fetchColumn();
+    $stats["heats"] = (int)$conn->query("SELECT COUNT(*) FROM heats")->fetchColumn();
+    $stats["performances"] = (int)$conn->query("SELECT COUNT(*) FROM performances")->fetchColumn();
+
+    $boat_counts = $conn->query("
+        SELECT r.boat, COUNT(p.performance_id) as count 
+        FROM performances p 
+        JOIN heats h ON p.heat_id = h.heat_id 
+        JOIN races r ON h.race_id = r.race_id 
+        GROUP BY r.boat
+    ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+    $stats["boats"] = [
+        "C1" => (int)($boat_counts["C1"] ?? 0),
+        "C2" => (int)($boat_counts["C2"] ?? 0),
+        "C4" => (int)($boat_counts["C4"] ?? 0),
+        "K1" => (int)($boat_counts["K1"] ?? 0),
+        "K2" => (int)($boat_counts["K2"] ?? 0),
+        "K4" => (int)($boat_counts["K4"] ?? 0),
+    ];
+
+    $other_count = 0;
+    foreach ($boat_counts as $boat => $count) {
+        if (!in_array($boat, ["C1", "C2", "C4", "K1", "K2", "K4"])) {
+            $other_count += (int)$count;
+        }
+    }
+    $stats["boats"]["other"] = $other_count;
+
+    return $stats;
+}
+
 function updateTeamLogo($team_id, $logo_url) {
     require "connect.php";
     $stmt = $conn->prepare("UPDATE teams SET logo = :logo WHERE team_id = :team_id");
