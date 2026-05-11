@@ -301,3 +301,5 @@ foreach ($races as $race) {
         }
     }
 }
+
+$conn->exec("UPDATE teams t SET performance_count = (SELECT COUNT(*) FROM performances p WHERE p.team_id = t.team_id)");

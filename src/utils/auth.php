@@ -1,6 +1,20 @@
 <?php
 
+function requireAlphanumeric($string, $fieldName = "Input") {
+    if (!preg_match('/^[a-zA-Z0-9]+$/', $string)) {
+        if (php_sapi_name() === 'cli') {
+            die("$fieldName must contain only letters and digits.\n");
+        } else {
+            header("HTTP/1.1 400 Bad Request");
+            header('Content-Type: application/json');
+            echo json_encode(["error" => "$fieldName must contain only letters and digits."]);
+            exit;
+        }
+    }
+}
+
 function registerAdmin($username, $password){
+    requireAlphanumeric($username, "Username");
     require_once "connect.php";
     $stmt = $conn->prepare("SELECT * FROM admins WHERE username=:username");
     $stmt->execute(["username" => $username]);

@@ -17,7 +17,6 @@ echo "Database is ready!"
 while true; do
     current_time=$(date +%s)
     
-    # Check if a month has passed since the last full sync
     if [ $((current_time - last_full_sync)) -ge $MONTH_SECONDS ]; then
         echo "[$(date)] Running full synchronization..."
         php /var/www/scripts/reset.php

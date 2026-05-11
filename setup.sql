@@ -17,7 +17,8 @@ DROP TABLE IF EXISTS teams;
 CREATE TABLE teams (
     team_id CHAR(5) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    logo TEXT
+    logo TEXT,
+    performance_count INT DEFAULT 0
 );
 
 CREATE TABLE athletes (

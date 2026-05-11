@@ -10,7 +10,7 @@ servers:
   - url: https://api.mykayak.fuffo.net
     description: Production server
 security:
-  - {} # Default to no security for public endpoints
+  - {}
 components:
   securitySchemes:
     adminToken:

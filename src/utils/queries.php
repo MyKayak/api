@@ -117,8 +117,6 @@ function getMedalTable($meet_id, $after, $before, $championships){
     
     $where = empty($conditions) ? "" : "WHERE " . implode(" AND ", $conditions);
     
-    // If filtering by meet_id only, return per-meet standings
-    // Otherwise aggregate across all matching meets by team
     if(!empty($meet_id) && empty($after) && empty($before) && !$championships){
         $query = "SELECT meet_id, team_id, team_name, gold, silver, bronze, total_medals FROM medal_table_view $where ORDER BY gold DESC, silver DESC, bronze DESC";
     } else {
@@ -311,12 +309,10 @@ function getAthlete($athlete_id){
 function getTeams($hint){
     require "connect.php";
     $stmt = $conn->prepare("
-        SELECT t.team_id, t.name, t.logo
-        FROM teams t
-        LEFT JOIN performances p ON t.team_id = p.team_id
-        WHERE t.name LIKE :hint
-        GROUP BY t.team_id, t.name, t.logo
-        ORDER BY COUNT(p.performance_id) DESC
+        SELECT team_id, name, logo
+        FROM teams
+        WHERE name LIKE :hint
+        ORDER BY performance_count DESC
     ");
     $stmt->execute(["hint" => "%" . $hint . "%"]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
