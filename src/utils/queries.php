@@ -406,6 +406,20 @@ function getStats() {
     }
     $stats["boats"]["other"] = $other_count;
 
+    $gender_counts = $conn->query("
+        SELECT r.category, COUNT(p.performance_id) as count 
+        FROM performances p 
+        JOIN heats h ON p.heat_id = h.heat_id 
+        JOIN races r ON h.race_id = r.race_id 
+        GROUP BY r.category
+    ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+    $stats["gender"] = [
+        "M" => (int)($gender_counts["M"] ?? 0),
+        "F" => (int)($gender_counts["F"] ?? 0),
+        "X" => (int)($gender_counts["X"] ?? 0),
+    ];
+
     return $stats;
 }
 

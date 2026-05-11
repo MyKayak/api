@@ -51,6 +51,15 @@ components:
               type: integer
             other:
               type: integer
+        gender:
+          type: object
+          properties:
+            M:
+              type: integer
+            F:
+              type: integer
+            X:
+              type: integer
 
     Meet:
       type: object
