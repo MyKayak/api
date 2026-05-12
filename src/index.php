@@ -126,6 +126,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
                 exit;
         }
         break;
+require_once "utils/connect.php";
     case "PATCH":
         if ($path[0] === 'meets' && !empty($path[1])) {
             require_once 'utils/auth.php';
@@ -147,6 +148,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             exit;
         }
         break;
+require_once "utils/connect.php";
     case "PUT":
         if ($path[0] === 'teams' && !empty($path[1]) && ($path[2] ?? '') === 'logo') {
             require_once 'utils/auth.php';

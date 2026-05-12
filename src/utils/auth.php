@@ -15,7 +15,7 @@ function requireAlphanumeric($string, $fieldName = "Input") {
 
 function registerAdmin($username, $password){
     requireAlphanumeric($username, "Username");
-    require_once "connect.php";
+    
     $stmt = $conn->prepare("SELECT * FROM admins WHERE username=:username");
     $stmt->execute(["username" => $username]);
 
@@ -30,7 +30,8 @@ function registerAdmin($username, $password){
 }
 
 function verifyAdminCredentials($username, $password){
-    require_once "connect.php";
+    global $conn;
+    
     $stmt = $conn->prepare("SELECT * FROM admins WHERE username=:username");
     $stmt->execute(["username" => $username]);
     if($stmt->rowCount() > 0){
@@ -43,6 +44,7 @@ function verifyAdminCredentials($username, $password){
 }
 
 function create_token($admin_id) {
+    global $conn;
     try {
         $token = bin2hex(random_bytes(32));
     } catch (\Random\RandomException $e) {
@@ -51,7 +53,7 @@ function create_token($admin_id) {
 
     $hashed_token = hash("sha256", $token);
     $expiration_date = date('Y-m-d', strtotime('+30 days'));
-    require "connect.php";
+    
 
     $stmt = $conn->prepare("INSERT INTO tokens (admin_id, token, expiration_date) VALUES (:admin_id, :token, :expiration_date)");
     if ($stmt->execute([
@@ -66,7 +68,8 @@ function create_token($admin_id) {
 }
 
 function loginAdmin($token) {
-    require_once "connect.php";
+    global $conn;
+    
     $stmt = $conn->prepare("SELECT * FROM tokens WHERE token=:token");
     $stmt->execute(["token" => hash("sha256", $token)]);
 
