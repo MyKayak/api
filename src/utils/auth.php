@@ -1,5 +1,8 @@
 <?php
 
+// Ensure connection is loaded even if this file is required directly (e.g. in CLI scripts)
+require_once __DIR__ . "/connect.php";
+
 function requireAlphanumeric($string, $fieldName = "Input") {
     if (!preg_match('/^[a-zA-Z0-9]+$/', $string)) {
         if (php_sapi_name() === 'cli') {
@@ -15,6 +18,8 @@ function requireAlphanumeric($string, $fieldName = "Input") {
 
 function registerAdmin($username, $password){
     global $conn;
+    if (!$conn) { require __DIR__ . "/connect.php"; }
+    
     requireAlphanumeric($username, "Username");
     
     $stmt = $conn->prepare("SELECT * FROM admins WHERE username=:username");
@@ -32,10 +37,7 @@ function registerAdmin($username, $password){
 
 function verifyAdminCredentials($username, $password){
     global $conn;
-    
-    if (!$conn) {
-        require_once __DIR__ . "/connect.php";
-    }
+    if (!$conn) { require __DIR__ . "/connect.php"; }
 
     if (!$conn) return false;
 
@@ -52,9 +54,8 @@ function verifyAdminCredentials($username, $password){
 
 function create_token($admin_id) {
     global $conn;
-    if (!$conn) {
-        require_once __DIR__ . "/connect.php";
-    }
+    if (!$conn) { require __DIR__ . "/connect.php"; }
+    if (!$conn) return false;
 
     try {
         $token = bin2hex(random_bytes(32));
@@ -79,9 +80,8 @@ function create_token($admin_id) {
 
 function loginAdmin($token) {
     global $conn;
-    if (!$conn) {
-        require_once __DIR__ . "/connect.php";
-    }
+    if (!$conn) { require __DIR__ . "/connect.php"; }
+    if (!$conn) return false;
     
     $stmt = $conn->prepare("SELECT * FROM tokens WHERE token=:token");
     $stmt->execute(["token" => hash("sha256", $token)]);
